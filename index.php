@@ -1,0 +1,10 @@
+<html>
+	<head>
+    	<title>Sistema</title>
+	</head>
+	<body>
+		<script>
+		document.location='aplicacao.php'
+		</script>
+	</body>
+</html>

@@ -1,0 +1,4 @@
+<?
+$GLOBALS["MODULOSISTEMA"]="Back-Up";
+$GLOBALS["DISCRICAOSISTEMA"]="Lista de Back-Up";
+?>
