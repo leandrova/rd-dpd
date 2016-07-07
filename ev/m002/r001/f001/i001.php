@@ -16,7 +16,12 @@ $listaTabela[]="
 				</thead>
 				<tbody>";
 
-$per=0; if ($FUNCOES->getPermissao(2,1,1,2,$USUARIO)) { $per=1; $condicao=""; } else { $condicao = " and codigoRecurso in (select codigoRecurso from dcd_recursos where usuarioRecurso = '$USUARIO') ";}
+$per=0; 
+if ($FUNCOES->getPermissao(2,1,1,2,$USUARIO)) { 
+	$per=1; $condicao=" and codigoRecurso in (select codigoRecurso from dcd_recursos where statusRecurso = 1) "; 
+} else { 
+	$condicao = " and codigoRecurso in (select codigoRecurso from dcd_recursos where usuarioRecurso = '$USUARIO') ";
+}
 $FUNCOES->consulta(array
 			(
 			"campos" => "r1.codigoRecurso, u1.nome, c1.descricaoCargo, c1.deflatorCargo, 
