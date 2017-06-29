@@ -38,7 +38,7 @@ if ($tipoBusca == "" or $tipoBusca == "projeto" ){
 	}
 	
 	if ($buscaProjeto <> ""){
-		$condicao = " upper(nomeProjeto) like upper('%$buscaProjeto%') ";
+		$condicao = " upper(nomeProjeto) like upper('%$buscaProjeto%') or upper(idFrente) like upper('%$buscaProjeto%') ";
 	}
 				
 	$FUNCOES->consulta(array
@@ -107,12 +107,12 @@ if ($tipoBusca == "" or $tipoBusca == "projeto" ){
 
 	$condicao = " r1.codigoRecurso in (select codigoRecurso from dcd_recursos where usuarioRecurso = '$USUARIO') ";
 	if ($buscaProjeto <> ""){
-		$condicao = " ( upper(nomeProjeto) like upper('%$buscaProjeto%') or upper(nomeFrente) like upper('%$buscaProjeto%') )";
+		$condicao = " ( upper(nomeProjeto) like upper('%$buscaProjeto%') or upper(nomeFrente) like upper('%$buscaProjeto%') or upper(idFrente) like upper('%$buscaProjeto%') )";
 	}
 
 	$FUNCOES->consulta(array
 			(
-			"campos" 	=> " p1.codigoProjeto, p1.codigoProjetoPai, p1.nomeProjeto, p1.descricao, s1.descricaoStatus, f1.codigoFrente, f1.nomeFrente, f1.descricaoFrente, o1.nomeOrigem, r1.usuarioRecurso, f2.nomeFase, m1.horasEsforco, t1.descricaoTipo ",
+			"campos" 	=> " p1.codigoProjeto, p1.codigoProjetoPai, p1.nomeProjeto, p1.descricao, s1.descricaoStatus, f1.codigoFrente, f1.prioridadeFrente, f1.idFrente, f1.nomeFrente, f1.descricaoFrente, o1.nomeOrigem, r1.usuarioRecurso, f2.nomeFase, m1.horasEsforco, t1.descricaoTipo ",
 			"tabelas" 	=> " dcd_projetos p1, dcd_frentes f1, dcd_origemprojetos o1, dcd_tiposprojeto t1, dcd_fasesprojetos f2, dcd_recursos r1, dcd_memoriaprojetos m1, dcd_statusprojeto s1  ",
 			"condicoes" => " $condicao and f1.codigoStatus = s1.codigoStatus and p1.codigoProjeto = f1.codigoProjeto and f1.codigoOrigem = o1.codigoOrigem and f1.codigoTipoProjeto = t1.codigoTipoProjeto and f1.codigoFase = f2.codigoFase and f1.codigoRecurso = r1.codigoRecurso and m1.codigoOrigem = f1.codigoOrigem and m1.codigoTipoProjeto = f1.codigoTipoProjeto and m1.codigoFase = f1.codigoFase  ",
 			"ordenacao" => " p1.nomeProjeto, f1.nomeFrente, f1.dataCadastro"
@@ -124,12 +124,13 @@ if ($tipoBusca == "" or $tipoBusca == "projeto" ){
 		while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
 		{
 			/**/
-			if ($obj->codigoProjetoPai <> 0 ) { $icone="<img src=\"./images/folder_closed.png\" style=\"width:18px;\">&nbsp;"; } else { $icone=""; }
+			if ($obj->codigoProjetoPai <> 0 ) { $icone	="<img src=\"./images/folder_closed.png\" style=\"width:18px;\">&nbsp;"; 		} else { $icone=""; 	}
+			if ($obj->prioridadeFrente > 0 	) { $prio 	="&nbsp;<font style='font-weight: bold;'>#".$obj->prioridadeFrente."</font>";	} else { $prio=""; 		}
 			$qnt=$qnt+1;
 			$listaTabela[]="
 				<tr style=\"cursor: pointer;\" onclick=\"document.aplicacao.codigoProjeto.value='$obj->codigoProjeto'; document.aplicacao.codigoFrente.value='$obj->codigoFrente'; executar('m001/r001/f001/loadFrente','aplicacao')\">
 					<td>$icone".($obj->nomeProjeto)."</td>
-					<td>".($obj->nomeFrente)."</td>
+					<td>".($obj->idFrente)." - ".($obj->nomeFrente)."$prio</td>
 					<td>".($obj->nomeOrigem)."</td>
 					<td>".($obj->nomeFase)."</td>
 					<td>".($obj->horasEsforco)."</td>

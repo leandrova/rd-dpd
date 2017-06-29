@@ -6,7 +6,7 @@ session_name(session_id()."system");
 // Funcao que verifica se o servidor é windows ou linux para colocar / ou \
 date_default_timezone_set('America/Sao_Paulo');
 /**/
-$NOMESISTEMA="RD - DPD";
+$NOMESISTEMA="Vivo - Canais Digitais";
 $DESCRICAOSISTEMA="";
 /**/
 $USUARIO="";

@@ -18,7 +18,7 @@
 </head>
 
 <body>
-<form method="POST" action="<?=$FUNCOES->ACTION;?>" name="aplicacao">
+<form method="POST" enctype="multipart/form-data" action="<?=$FUNCOES->ACTION;?>" name="aplicacao">
 <input type="hidden" name="IU" value="<?=$IU;?>">
 <input type="hidden" name="evento" value="<?=$evento;?>">
 <input type="hidden" name="codigo" value="<? if (isset($codigo)) { echo $codigo; }?>">

@@ -495,8 +495,14 @@ class FUNCOES extends SQL
 
 	public function formataValor($valor)
 	{
-		$casas = 3;	
+		$casas = 2;	
 		$valor = number_format($valor,$casas,',','.');
+		return $valor;
+	}
+
+	public function limpaValor($valor)
+	{
+		$valor = str_replace(",", ".", str_replace(".", "", $valor));
 		return $valor;
 	}
 

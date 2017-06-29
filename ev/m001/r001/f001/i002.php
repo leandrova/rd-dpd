@@ -86,6 +86,7 @@ if ($FUNCOES->GetLinhas()>0)
 		$qnt=$qnt+1;
 		$listaTabela[]="
 				<tr style=\"cursor: pointer;\" onclick=\"document.aplicacao.codigoProjeto.value='$obj->codigoProjeto'; document.aplicacao.codigoProjetoPai.value=0; executar('m001/r001/f001/loadDetalhe','aplicacao')\">
+					<td></td>
 					<td><img id=\"pasta$qnt\" src=\"./images/folder_closed.png\" style=\"width:18px;\" /> ".($obj->nomeProjeto)."</td>
 					<td>".($obj->descricao)."</td>
 					<td> -- // -- </td>
@@ -101,7 +102,7 @@ if ($FUNCOES->GetLinhas()>0)
 /* Pesquisando Frentes */
 $FUNCOES->consulta(array
 			(
-			"campos" 	=> " p1.nomeProjeto, p1.descricao, f1.codigoFrente, f1.nomeFrente, f1.descricaoFrente, o1.nomeOrigem, r1.usuarioRecurso, f2.nomeFase, m1.horasEsforco, t1.descricaoTipo, f1.codigoFase, s1.esforcoAlocado, s1.descricaoStatus",
+			"campos" 	=> " p1.nomeProjeto, p1.descricao, f1.codigoFrente, f1.prioridadeFrente, f1.idFrente, f1.nomeFrente, f1.descricaoFrente, o1.nomeOrigem, r1.usuarioRecurso, f2.nomeFase, m1.horasEsforco, t1.descricaoTipo, f1.codigoFase, s1.esforcoAlocado, s1.descricaoStatus",
 			"tabelas" 	=> " dcd_projetos p1, dcd_frentes f1, dcd_origemprojetos o1, dcd_tiposprojeto t1, dcd_fasesprojetos f2, dcd_recursos r1, dcd_memoriaprojetos m1, dcd_statusprojeto s1",
 			"condicoes" => " p1.codigoProjeto = $codigoProjeto and p1.codigoProjeto = f1.codigoProjeto and f1.codigoOrigem = o1.codigoOrigem and f1.codigoStatus = s1.codigoStatus and f1.codigoTipoProjeto = t1.codigoTipoProjeto and f1.codigoFase = f2.codigoFase and f1.codigoRecurso = r1.codigoRecurso and m1.codigoOrigem = f1.codigoOrigem and m1.codigoTipoProjeto = f1.codigoTipoProjeto and m1.codigoFase = f1.codigoFase",
 			"ordenacao" => " f1.nomeFrente, f1.dataCadastro"
@@ -113,14 +114,15 @@ if ($FUNCOES->GetLinhas()>0)
 	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
 	{
 		/**/
-		$comentario = "";
-		if ($obj->esforcoAlocado <> 1) 	{ $comentario.="<br/><strong style=\"font-size: 10; color: red;\">[Fentre $obj->descricaoStatus]</strong>"; 	}
-		if ($obj->codigoFase == 11) 		{ $comentario.="<br/><strong style=\"font-size: 10; color: red;\">[Fentre Concluida]</strong>"; 				} 
+		$comentario = ""; $prio = "";
+		if ($obj->esforcoAlocado <> 1) 		{ $comentario	.="<br/><strong style=\"font-size: 10; color: red;\">[Fentre $obj->descricaoStatus]</strong>"; 	}
+		if ($obj->codigoFase == 10) 		{ $comentario	.="<br/><strong style=\"font-size: 10; color: red;\">[Fentre Concluida]</strong>"; 				} 
+		if ($obj->prioridadeFrente > 0 	) 	{ $prio 		 ="&nbsp;<font style='font-weight: bold;'>#".$obj->prioridadeFrente."</font>"; 			} 
 		/**/
 		$qnt=$qnt+1;
 		$listaTabela[]="
 				<tr style=\"cursor: pointer;\" onclick=\"document.aplicacao.codigoFrente.value='$obj->codigoFrente'; executar('m001/r001/f001/loadFrente','aplicacao')\">
-					<td>".($obj->nomeFrente).($comentario)."</td>
+					<td>".($obj->idFrente)." - ".($obj->nomeFrente).$prio.($comentario)."</td>
 					<td>".($obj->descricaoFrente)."</td>
 					<td>".($obj->nomeOrigem)."</td>
 					<td>".($obj->usuarioRecurso)."</td>

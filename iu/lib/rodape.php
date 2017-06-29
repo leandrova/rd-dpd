@@ -1,5 +1,5 @@
  
-    <div class="container">
+    <div class="container" style="width: 100%">
       <!-- Example row of columns -->
       <!--div class="row">
         <div class="col-md-4">
@@ -32,7 +32,7 @@
 	  
       <footer>
         <p>
-		<div style="width: 50%; float: left; ">© RD</div>
+		<div style="width: 50%; float: left; ">©</div>
 		<div style="width: 50%; float: right; text-align: right; font-size: 10px;"><?=strtoupper($GLOBALS["IU"]);?></div>
 		</p>
       </footer>

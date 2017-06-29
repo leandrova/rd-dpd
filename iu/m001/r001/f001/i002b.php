@@ -7,9 +7,13 @@
 				<table class="table table-striped table-condensed">
 				<tbody>
 		                    <tr>
-		                    	<td>Nome da Frente</td>
+		                    	<td>Nome da Frente&nbsp;<small>(Id/Nome/Prioridade)</small></td>
 		                        <td>&nbsp;:&nbsp;</td>
-		                        <td colspan="4"><input type="text" class="form-control" name="nomeFrente" size="50" maxlength="250" value="<? echo $nomeFrente; ?>" /></td>
+		                        <td colspan="4">
+		                        	<input type="text" class="form-control" name="idFrente" size="10" maxlength="10" value="<? echo ($idFrente); ?>" style="width: 6%; float: left;" />
+		                        	<input type="text" class="form-control" name="nomeFrente" size="50" maxlength="250" value="<? echo ($nomeFrente); ?>" style="float: left; width: 90%;" />
+		                        	<input type="text" class="form-control" name="prioridadeFrente" size="5" maxlength="5" value="<? echo ($prioridadeFrente); ?>" style="float: right; width: 4%;" />
+		                        </td>
 							</tr>
 		                    <tr>
 		                    	<td>Descrição</td>

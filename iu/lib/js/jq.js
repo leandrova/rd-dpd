@@ -71,8 +71,10 @@ jQuery(document).ready(function(){
 		});
 	}
 	/* Formata Valor */	
+	console.log('asd');
 	if ($("#data0"))	{ $("#data0").mask("99/99/9999");	}
 	if ($("#data1"))	{ $("#data1").mask("99/99/9999");	}
 	if ($("#valor0"))	{ $("#valor0").maskMoney({symbol:"R$",decimal:",",thousands:"."})	}
 	if ($("#valor1"))	{ $("#valor1").maskMoney({symbol:"R$",decimal:",",thousands:"."})	}	
+	if ($("#valor2"))	{ $("#valor2").maskMoney({prefix:'R$ ', allowNegative: true, thousands:'.', decimal:',', affixesStay: false}); }
 })

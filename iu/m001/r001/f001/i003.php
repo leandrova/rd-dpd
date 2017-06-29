@@ -1,6 +1,7 @@
 	<input type="hidden" name="codigoProjeto" value="<?=$codigoProjeto;?>"/>
 	<input type="hidden" name="codigoFrente" value="<?=$codigoFrente;?>"/>
 	<input type="hidden" name="codigoRecursoFrente"/>
+	<input type="hidden" name="codigoSistemaImpactado"/>
 <!-- Inicio Lista Capacidade -->
     <div class="jumbotron">
 
@@ -8,7 +9,7 @@
 		
 		<? 
 		if ($codigoStatus 	<> 1	) { echo "<div class=\"alert alert-danger\" role=\"alert\">  ATENÇÃO O STATUS DESSA FRENTE É ".strtoupper($statusProjeto[$codigoStatus])."</div>"; } 
-		if ($codigoFase 	== 11	) { echo "<div class=\"alert alert-danger\" role=\"alert\">  ATENÇÃO A FASE DESSA FRENTE É ".strtoupper($statusFaseProjeto[$codigoFase])."</div>"; } 
+		if ($codigoFase 	== 10	) { echo "<div class=\"alert alert-danger\" role=\"alert\">  ATENÇÃO A FASE DESSA FRENTE É ".strtoupper($statusFaseProjeto[$codigoFase])."</div>"; } 
 		?>
 		
         <!-- MAIN CONTENT -->
@@ -44,7 +45,7 @@
 							</tr>
 		        </tbody>
 				</table>
-				<? if ($FUNCOES->getPermissao(1,1,1,2,$USUARIO) & ( ($usuarioRecurso==$USUARIO) or  ($USUARIO=="SUPORTE") ) ) {?>
+				<? if ($FUNCOES->getPermissao(1,1,1,2,$USUARIO) & ( ($usuarioRecurso==$USUARIO) or  ($USUARIO=="SUPORTE") or $FUNCOES->getPermissao(1,1,1,3,$USUARIO) ) ) {?>
 				&nbsp;<input type="button" class="btn btn-default" value="Alterar Projeto" onclick="validaProjeto();" />
 				<? } ?>
 				<br/>
@@ -69,9 +70,13 @@
 				<table class="table table-striped table-condensed">
 				<tbody>
 		                    <tr>
-		                    	<td>Nome da Frente</td>
+		                    	<td>Nome da Frente&nbsp;<small>(Id/Nome/Prioridade)</small></td>
 		                        <td>&nbsp;:&nbsp;</td>
-		                        <td colspan="4"><input type="text" class="form-control" name="nomeFrente" size="50" maxlength="250" value="<? echo ($nomeFrente); ?>" /></td>
+		                        <td colspan="4">
+		                        	<input type="text" class="form-control" name="idFrente" size="10" maxlength="10" value="<? echo ($idFrente); ?>" style="width: 6%; float: left;" />
+		                        	<input type="text" class="form-control" name="nomeFrente" size="50" maxlength="250" value="<? echo ($nomeFrente); ?>" style="float: left; width: 90%;" />
+		                        	<input type="text" class="form-control" name="prioridadeFrente" size="5" maxlength="5" value="<? echo ($prioridadeFrente); ?>" style="float: right; width: 4%;" />
+		                        </td>
 							</tr>
 		                    <tr>
 		                    	<td colspan="6">Descrição</td>
@@ -105,7 +110,7 @@
 							</tr>
 		        </tbody>
 				</table>
-				<? if ($FUNCOES->getPermissao(1,1,1,2,$USUARIO) & ( ($usuarioRecurso==$USUARIO) or  ($USUARIO=="SUPORTE") ) ) {?>
+				<? if ($FUNCOES->getPermissao(1,1,1,2,$USUARIO) & ( ($usuarioRecurso==$USUARIO) or  ($USUARIO=="SUPORTE") or $FUNCOES->getPermissao(1,1,1,3,$USUARIO) ) ) {?>
 					&nbsp;<input type="button" class="btn btn-default" value="Alterar Frente" onclick="executar('m001/r001/f001/alterarFrente','aplicacao')" />
 				<? } ?>
 				<br/>
@@ -116,11 +121,34 @@
 			<div class="panel-heading" style="cursor:hand;" onclick="alterDisplay(document.getElementById('marcosDoProjeto'))"><b>Planejamento do Projeto</b></div>
 			<div id="dadosDaFrente" style="panel-body; <!--display:<? if (isset($marcosDoProjeto)) { echo $marcosDoProjeto; } else { echo "none"; } ?>-->; padding-bottom: 15px;">
 				<? if (isset($marcoProjeto)){  foreach($marcoProjeto as $value) { echo $value; }	}	?>
-				<? if ($FUNCOES->getPermissao(1,1,1,2,$USUARIO) & ( ($usuarioRecurso==$USUARIO) or  ($USUARIO=="SUPORTE") ) ) {?>
+				<? if ($FUNCOES->getPermissao(1,1,1,2,$USUARIO) & ( ($usuarioRecurso==$USUARIO) or  ($USUARIO=="SUPORTE") or $FUNCOES->getPermissao(1,1,1,3,$USUARIO) ) ) {?>
 					&nbsp;<input type="button" class="btn btn-default" value="Atualizar Planejamento" onclick="executar('m001/r001/f001/atualizarPlanejamento','aplicacao')" />
 				<? } ?>
 			</div>
 			</div>
+
+    		<script type="text/javascript" src="/iu/lib/js/jquery.maskMoney.min.js"></script> 
+			<script type="text/javascript">
+				var listaSistemas = JSON.parse('<?php echo json_encode($arrayTiposSistemas); ?>');
+				function carregaSistemas(value)
+				{
+					if (value)
+					{
+						document.getElementById('nomeTecnologia').value = listaSistemas[value].nomeTecnologia;
+						document.getElementById('tipoContrato').value 	= listaSistemas[value].tipoContrato;
+					}
+				}
+			</script>
+
+			<div class="panel panel-default">
+			<div class="panel-heading" style="cursor:hand;" onclick="alterDisplay(document.getElementById('sistemasImpactados'))"><b>Sistemas Impactados</b></div>
+			<div id="sistemasImpactados" style="panel-body; <!--display:<? if (isset($sistemasImpactados)) { echo $sistemasImpactados; } else { echo "none"; } ?>-->; padding-bottom: 15px;">
+				<? if (isset($listaSistemas)){  foreach($listaSistemas as $value) { echo $value; }	}	?>
+			</div>
+			</div>
+
+			<script type="text/javascript">$("#valor1").maskMoney({prefix:'', allowNegative: true, thousands:'.', decimal:',', precision: 2, affixesStay: false});</script>
+			<script type="text/javascript">$("#valor2").maskMoney({prefix:'R$ ', allowNegative: true, thousands:'.', decimal:',', affixesStay: false});</script>
 			
 			<div class="panel panel-default">
 			<div class="panel-heading" style="cursor:hand;" onclick="alterDisplay(document.getElementById('dadosDoHistorico'))"><b>Histórico da Frente do Projeto</b></div>
@@ -130,7 +158,7 @@
 			</div>
 			</div>
 			
-			<? if ($FUNCOES->getPermissao(1,1,1,2,$USUARIO) & ( ($usuarioRecurso==$USUARIO) or  ($FUNCOES->getPermissao(1,1,1,3,$USUARIO)) ) ) { ?>
+			<? if ($FUNCOES->getPermissao(1,1,1,2,$USUARIO) & ( ($usuarioRecurso==$USUARIO) or  ($USUARIO=="SUPORTE") or ($FUNCOES->getPermissao(1,1,1,3,$USUARIO)) ) ) { ?>
 			<div class="panel panel-default">
 			<div class="panel-heading" style="cursor:hand;" onclick="alterDisplay(document.getElementById('incluirHistorico'))"><b>Incluir Histórico</b></div>
 			<div id="incluirHistorico" style="panel-body; <!--display:<? if (isset($incluirHistorico)) { echo $incluirHistorico; } else { echo "none"; } ?>-->; padding-bottom: 15px;">

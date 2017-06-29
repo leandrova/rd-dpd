@@ -9,8 +9,24 @@ $codigoFrente		="";	If (isset($_POST["codigoFrente"]))		{	$codigoFrente 		= $_PO
 $nomeProjeto		="";	If (isset($_POST["nomeProjeto"])) 		{	$nomeProjeto 	= $_POST["nomeProjeto"]; 			}
 $descricao			="";	If (isset($_POST["descricao"])) 		{	$descricao 		= $_POST["descricao"]; 				}
 
+$idFrente			="";	If (isset($_POST["idFrente"]))			{	$idFrente 		= $_POST["idFrente"]; 				}
 $nomeFrente			="";	If (isset($_POST["nomeFrente"]))		{	$nomeFrente 		= $_POST["nomeFrente"]; 		}
 $descricaoFrente 	="";	If (isset($_POST["descricaoFrente"]))	{	$descricaoFrente 	= $_POST["descricaoFrente"];	}
+
+$codigoSistema			="";
+$codigoRecursoSistemas	="";
+$dataAlocacao			="";
+$quantidade				="";
+$custo 					="";
+
+if (!isset($cadastroSistema))
+{
+if (isset($_POST["codigoSistema"]))			{	$codigoSistema 			= $_POST["codigoSistema"]; 			}
+if (isset($_POST["codigoRecursoSistemas"]))	{	$codigoRecursoSistemas 	= $_POST["codigoRecursoSistemas"];	}
+if (isset($_POST["dataAlocacao"]))			{	$dataAlocacao 			= $_POST["dataAlocacao"];			}
+if (isset($_POST["quantidade"]))			{	$quantidade 			= $_POST["quantidade"];				}
+if (isset($_POST["custo"]))					{	$custo 					= $_POST["custo"];					}
+}
 
 $dataHistorico		= $FUNCOES->DataExterna($FUNCOES->DATA);	If (isset($_POST["dataHistorico"]))		{	$dataHistorico 		= $_POST["dataHistorico"];		}
 $descricaoHistorico	="";
@@ -27,7 +43,7 @@ $codigoStatus		="";	If (isset($_POST["codigoStatus"]))			{	$codigoStatus		= $_PO
 /* Busca Frentes do Projeto */
 $FUNCOES->consulta(array
 			(
-			"campos" 	=> "p1.codigoProjeto, p1.nomeProjeto, p1.descricao, p1.codigoProjetoPai, f1.codigoFrente, f1.nomeFrente, f1.codigoStatus, f1.codigoOrigem, f1.descricaoFrente, f1.codigoTipoProjeto, o1.nomeOrigem, f1.codigoFase, f1.codigoRecurso, r1.usuarioRecurso, f2.nomeFase, m1.horasEsforco, t1.descricaoTipo, u1.nome nomeRecurso, f1.codigoArea, as1.nomeArea",
+			"campos" 	=> "p1.codigoProjeto, p1.nomeProjeto, p1.descricao, p1.codigoProjetoPai, f1.codigoFrente, f1.prioridadeFrente, f1.idFrente, f1.nomeFrente, f1.codigoStatus, f1.codigoOrigem, f1.descricaoFrente, f1.codigoTipoProjeto, o1.nomeOrigem, f1.codigoFase, f1.codigoRecurso, r1.usuarioRecurso, f2.nomeFase, m1.horasEsforco, t1.descricaoTipo, u1.nome nomeRecurso, f1.codigoArea, as1.nomeArea",
 			"tabelas" 	=> "dcd_projetos p1, dcd_frentes f1, dcd_origemprojetos o1, dcd_tiposprojeto t1, dcd_fasesprojetos f2, dcd_recursos r1, dcd_memoriaprojetos m1, usuarios u1, dcd_areasolicitante as1",
 			"condicoes" => "p1.codigoProjeto = f1.codigoProjeto and f1.codigoOrigem = o1.codigoOrigem and r1.usuarioRecurso = u1.login and f1.codigoTipoProjeto = t1.codigoTipoProjeto and f1.codigoFase = f2.codigoFase and f1.codigoRecurso = r1.codigoRecurso and m1.codigoOrigem = f1.codigoOrigem and m1.codigoTipoProjeto = f1.codigoTipoProjeto and m1.codigoFase = f1.codigoFase and f1.codigoProjeto = $codigoProjeto and f1.codigoFrente = $codigoFrente and f1.codigoArea = as1.codigoArea",
 			"ordenacao" => "f1.dataCadastro"
@@ -38,8 +54,10 @@ if ($FUNCOES->GetLinhas()>0)
 	$obj=mysql_fetch_object($FUNCOES->GetResultado());
 	$nomeProjeto		= $obj->nomeProjeto;
 	$descricao			= $obj->descricao;
+	if ($idFrente == "") 			{	$idFrente			= ($obj->idFrente); 		}
 	if ($nomeFrente == "") 			{	$nomeFrente			= ($obj->nomeFrente); 		}
 	if ($descricaoFrente == "") 	{	$descricaoFrente	= ($obj->descricaoFrente);	}
+	if ($prioridadeFrente == "") 	{	$prioridadeFrente	= ($obj->prioridadeFrente);	}
 	$codigoProjetoPai	= $obj->codigoProjetoPai;
 	$codigoTipoProjeto	= $obj->codigoTipoProjeto;
 	$nomeTipoProjeto	= ($obj->descricaoTipo);
@@ -90,7 +108,8 @@ If (isset($_POST["codigoTipoProjeto"]))	{	$codigoTipoProjeto 	= $_POST["codigoTi
 If (isset($_POST["codigoRecurso"]))		{	$codigoRecurso 		= $_POST["codigoRecurso"];		}
 If (isset($_POST["codigoOrigem"]))		{	$codigoOrigem 		= $_POST["codigoOrigem"];		}
 If (isset($_POST["codigoFase"]))		{	$codigoFase 		= $_POST["codigoFase"];			}
-
+If (isset($_POST["codigoTipoProjeto"]))	{	$codigoTipoProjeto	= $_POST["codigoTipoProjeto"];	}
+If (isset($_POST["codigoTipoSistema"]))	{	$codigoTipoSistema	= $_POST["codigoTipoSistema"];	}
 
 /* Buscando Projetos */
 $listaProjetos[]="<option value=\"\"></option>"; 
@@ -134,7 +153,7 @@ if ($FUNCOES->GetLinhas()>0)
 }
 /**/
 
-/* Buscando Tipos de Projetos */
+/* Buscando Recursos */
 $listaRecursos[]="<option value=\"\"></option>"; 
 $FUNCOES->consulta(array ( "tabelas" 	=> "dcd_recursos" ) );
 if ($FUNCOES->GetLinhas()>0)
@@ -174,6 +193,63 @@ if ($FUNCOES->GetLinhas()>0)
 }
 /**/
 
+/* Buscando Tipos de Sistemas */
+$listaTiposSistemas[]="<option value=\"\"></option>"; 
+$FUNCOES->consulta(array ( 
+					"campos" 	=> " dts.codigoSistema, dts.nomeSistema, dtt.nomeTecnologia, dtc.tipoContrato",
+					"tabelas" 	=> " dcd_tipossistema dts, dcd_tipostecnologia dtt, dcd_tiposcontrato dtc ",
+					"condicoes"	=> " dts.codigoTecnologia = dtt.codigoTecnologia and dts.codigoContrato = dtc.codigoTipoContrato ",
+					"ordenacao" => " dts.nomeSistema, dtt.nomeTecnologia "
+ 					) 
+ 				);
+if ($FUNCOES->GetLinhas()>0)
+{
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{	
+		If ($obj->codigoSistema == $codigoSistema) {	$value="selected";	}	else	{	$value="";	}
+		$listaTiposSistemas[]="<option $value value=\"$obj->codigoSistema\">".($obj->nomeSistema)."</option>"; 
+	}
+}
+/**/
+
+/* Array Tipos de Sistemas */
+unset($arrayTiposSistemas); $qnt = 0; 
+$FUNCOES->consulta(array ( 
+					"campos" 	=> " dts.nomeSistema, dtt.nomeTecnologia, dtc.tipoContrato",
+					"tabelas" 	=> " dcd_tipossistema dts, dcd_tipostecnologia dtt, dcd_tiposcontrato dtc ",
+					"condicoes"	=> " dts.codigoTecnologia = dtt.codigoTecnologia and dts.codigoContrato = dtc.codigoTipoContrato ",
+					"ordenacao" => " dts.nomeSistema, dtt.nomeTecnologia "
+ 					) 
+ 				);
+if ($FUNCOES->GetLinhas()>0)
+{
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{
+		$qnt = $qnt+1;
+		$arrayTiposSistemas[$qnt]['nomeTecnologia'] = $obj->nomeTecnologia;
+		$arrayTiposSistemas[$qnt]['tipoContrato'] 	= $obj->tipoContrato;
+	}
+}
+/**/
+
+/* Buscando Recursos */
+$listaRecursosSistemas[]="<option value=\"\"></option>"; 
+$FUNCOES->consulta(array ( 
+					"tabelas" 	=> " dcd_recursosistemas ",
+					"condicoes"	=> " codigoRecursoSistemas <> 3 ",
+					"ordenacao" => " nomeRecurso "
+ 					) 
+ 				);
+if ($FUNCOES->GetLinhas()>0)
+{
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{	
+		if ($obj->codigoRecursoSistemas == $codigoRecursoSistemas) {	$value="selected";	}	else	{	$value="";	}
+		$listaRecursosSistemas[]="<option $value value=\"$obj->codigoRecursoSistemas\">".($obj->nomeRecurso)."</option>"; 
+	}
+}
+/**/
+
 /* Buscando Status */
 $statusProjeto[]="";		$statusProjeto[]="Em andamento"; 	$statusProjeto[]="Parado"; 	$statusProjeto[]="Cancelado"; 
 foreach ($statusProjeto as $key => $value)
@@ -201,7 +277,7 @@ if ($FUNCOES->GetLinhas()>0)
 
 /* Buscando Marcos do Projeto */
 $FUNCOES->consulta(array ( 
-					"campos"	=> " fp.nomeFase, fp.codigoFase, mf.dataMarco, mf.codigoMarco, mf.usuarioCadastro, mf.dataCadastro", 
+					"campos"	=> " fp.nomeFase, fp.codigoFase, mf.dataInicioMarco, mf.dataFimMarco, mf.codigoMarco, mf.usuarioCadastro, mf.dataCadastro", 
 					"tabelas" 	=> " dcd_fasesprojetos fp left join dcd_marcofrente mf on fp.codigoFase = mf.codigoFase and mf.codigoFrente = $codigoFrente",
 					"ordenacao"	=> " fp.codigoFase, mf.codigoMarco desc "
 					)
@@ -210,15 +286,21 @@ if ($FUNCOES->GetLinhas()>0)
 {
 	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
 	{
-		if ($obj->dataMarco 		<> "") { $dataMarco			=$FUNCOES->dataExterna($obj->dataMarco); 	} else { $dataMarco 		= "TBD"; }
-		if ($obj->dataCadastro 		<> "") { $dataCadastro		=$FUNCOES->dataExterna($obj->dataCadastro); } else { $dataCadastro 		= ""; }
-		$listaMarcoProjeto[$obj->nomeFase][]=$obj->codigoFase."#".$dataMarco."#".$obj->codigoMarco."#".$obj->usuarioCadastro."#".$dataCadastro;
+		if ($obj->dataInicioMarco 	<> "") { $dataInicioMarco	= $FUNCOES->dataExterna($obj->dataInicioMarco); 	} else { $dataInicioMarco 	= "TBD"; }
+		if ($obj->dataFimMarco 		<> "") { $dataFimMarco		= $FUNCOES->dataExterna($obj->dataFimMarco); 	} else { $dataFimMarco 		= "TBD"; }
+		if ($obj->dataCadastro 		<> "") { $dataCadastro		= $FUNCOES->dataExterna($obj->dataCadastro); } else { $dataCadastro 		= ""; }
+		$listaMarcoProjeto[$obj->nomeFase][]=$obj->codigoFase."#".$dataInicioMarco."#".$dataFimMarco."#".$obj->codigoMarco."#".$obj->usuarioCadastro."#".$dataCadastro;
 	}
 }
 
 $marcoProjeto[]="
 	<table class=\"table table-striped table-condensed\">
-	<tbody>";
+	<tbody>
+	<tr>
+		<th style=\"width:20%\">Fase</th>
+		<th style=\"width:40%\" colspan=\"2\">Data Inicio</th>
+		<th style=\"width:40%\" colspan=\"2\">Data Fim</th>
+	</tr>";
 
 $linhas=0;
 foreach($listaMarcoProjeto as $key => $value){
@@ -229,19 +311,27 @@ foreach($listaMarcoProjeto as $key => $value){
 		<tr>
 		";
 	}
-	list($LMPcodigoFase, $LMPdataMarco, $LMPcodigoMarco, $LMPusuarioCadastro, $LMPdataCadastro)  = explode("#",$listaMarcoProjeto[$key][0]);
-	$LMPdataMarco2="TBD"; $LMPcodigoMarco2 = "";
+	list($LMPcodigoFase, $LMPdataInicioMarco, $LMPdataFimMarco, $LMPcodigoMarco, $LMPusuarioCadastro, $LMPdataCadastro)  = explode("#",$listaMarcoProjeto[$key][0]);
+	$LMPdataMarcoInicio2="TBD"; $LMPdataMarcoFim2="TBD"; $LMPcodigoMarco2 = "";
 	if (isset($listaMarcoProjeto[$key][1])){
-		list($LMPcodigoFase2, $LMPdataMarco2,$LMPcodigoMarco2, $LMPusuarioCadastro2, $LMPdataCadastro2) = explode("#",$listaMarcoProjeto[$key][1]);
+		list($LMPcodigoFase2, $LMPdataInicioMarco2, $LMPdataFimMarco2,$LMPcodigoMarco2, $LMPusuarioCadastro2, $LMPdataCadastro2) = explode("#",$listaMarcoProjeto[$key][1]);
 	}
-	if ( ($LMPdataMarco2 == "TBD") or ($LMPdataMarco2 == "") )  { $LMPdataMarco2="";	} else { $LMPdataMarco2=" <small title=\"Ajustado por $LMPusuarioCadastro2 em $LMPdataCadastro2 \"><s>($LMPdataMarco2)</s></small> "; }
+	if ( ($LMPdataInicioMarco2 == "TBD")or ($LMPdataInicioMarco2 == "") )  	{ $LMPdataInicioMarco2="";	} else { $LMPdataInicioMarco2	=" <small title=\"Ajustado por $LMPusuarioCadastro2 em $LMPdataCadastro2 \"><s>($LMPdataInicioMarco2)</s></small> ";}
+	if ( ($LMPdataFimMarco2 == "TBD") 	or ($LMPdataFimMarco2 == "") )  	{ $LMPdataFimMarco2="";		} else { $LMPdataFimMarco2		=" <small title=\"Ajustado por $LMPusuarioCadastro2 em $LMPdataCadastro2 \"><s>($LMPdataFimMarco2)</s></small> "; 	}
 	if ($LMPcodigoFase == $codigoFase) { $negrito="font-weight: bold"; } else { $negrito=""; }
-	if ($LMPdataMarco == "") { $LMPdataMarco="TBD"; }
-	if (isset($_POST["dataMarco".$LMPcodigoFase])) { $LMPdataMarco = $_POST["dataMarco".$LMPcodigoFase]; }
-	if (isset($listaMarcoDtInvalido[$LMPcodigoFase])) { $erro="border-color: #A94442;"; } else { $erro=""; }
+	if ($LMPdataInicioMarco == "") 	{ $LMPdataInicioMarco="TBD";}
+	if ($LMPdataFimMarco == "") 	{ $LMPdataFimMarco="TBD"; 	}
+	if (isset($_POST["dataInicioMarco".$LMPcodigoFase])){ $dataInicioMarco 	= $_POST["dataInicioMarco".$LMPcodigoFase]; }
+	if (isset($_POST["dataFimMarco".$LMPcodigoFase])) 	{ $dataFimMarco 	= $_POST["dataFimMarco".$LMPcodigoFase]; 	}
+	if (isset($listaMarcoDtInvalido[$LMPcodigoFase.'ini'])) { $erro1="border-color: #A94442;"; } else { $erro1=""; }
+	if (isset($listaMarcoDtInvalido[$LMPcodigoFase.'fin'])) { $erro2="border-color: #A94442;"; } else { $erro2=""; }
 	
 	$marcoProjeto[]="
-			<td width=\"20%\" style=\"$negrito\">$key</td><td width=\"20%\"><input class=\"form-control\" style=\"$erro\" name=\"dataMarco$LMPcodigoFase\" size=\"11\" maxlength=\"10\" type=\"text\" value=\"".$LMPdataMarco."\"></td><td width=\"10%\" style=\"vertical-align: inherit;\">".$LMPdataMarco2."</td>
+			<td width=\"20%\" style=\"$negrito\">$key</td>
+			<td width=\"20%\"><input class=\"form-control\" id=\"data\" style=\"$erro1\" name=\"dataInicioMarco$LMPcodigoFase\" size=\"11\" maxlength=\"10\" type=\"text\" value=\"".$LMPdataInicioMarco."\"></td>
+			<td width=\"10%\" style=\"vertical-align: inherit;\">".$LMPdataInicioMarco2."</td>
+			<td width=\"20%\"><input class=\"form-control\" id=\"data\" style=\"$erro2\" name=\"dataFimMarco$LMPcodigoFase\" size=\"11\" maxlength=\"10\" type=\"text\" value=\"".$LMPdataFimMarco."\"></td>
+			<td width=\"10%\" style=\"vertical-align: inherit;\">".$LMPdataFimMarco2."</td>
 		";
 	if ($linhas == 1){
 		$linhas = 0;
@@ -253,7 +343,7 @@ foreach($listaMarcoProjeto as $key => $value){
 }
 
 $marcoProjeto[]="
-		<td>&nbsp;</td><td>&nbsp;</td>
+		<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
 		</tr>
 	</tbody>
 	</table>";
@@ -325,6 +415,96 @@ if ($FUNCOES->GetLinhas()>0)
 }
 
 $listaHistorico[]="
+				</table>";
+
+/* */
+
+/* Sistemas do Projeto */ 
+$edit = 0;
+if ($FUNCOES->getPermissao(1,1,1,2,$USUARIO) & ( ($usuarioRecurso==$USUARIO) or  ($USUARIO=="SUPORTE") or $FUNCOES->getPermissao(1,1,1,3,$USUARIO) ) ) {
+	$edit = 1;
+}
+
+$listaSistemas[]="
+				<table class=\"table table-striped table-condensed\">
+				<thead>
+				<tr>
+					<th style=\"width:30%\">Recurso</th>
+					<th style=\"width:25%\">Sistema</th>
+					<th style=\"width:10%\">Alocação</th>
+					<th style=\"width:15%\">Quantidade Horas</th>
+					<th style=\"width:15%\">Custo</th>
+					<th style=\"width:5%\">&nbsp</th>
+				</tr>
+				</thead>
+				<tbody>";
+
+$FUNCOES->consulta(array
+			(
+			"campos" 	=> " ds.codigoSistema, ds.dataAlocacao, dts.nomeSistema, dtt.nomeTecnologia, dtc.tipoContrato, ds.custo, ds.quantidade, drs.nomeRecurso, ds.dataCadastro, ds.horaCadastro, ds.usuarioCadastro",
+			"tabelas" 	=> " dcd_sistemas ds, dcd_tipossistema dts, dcd_tipostecnologia dtt, dcd_tiposcontrato dtc, dcd_recursosistemas drs ",
+			"condicoes"	=> " ds.codigoFrente = $codigoFrente and ds.codigoRecursoSistemas = drs.codigoRecursoSistemas and ds.codigoTipoSistema = dts.codigoSistema and dts.codigoTecnologia = dtt.codigoTecnologia and dts.codigoContrato = dtc.codigoTipoContrato ",
+			"ordenacao" => " ds.dataAlocacao, dts.nomeSistema, dtt.nomeTecnologia "
+			)
+		);
+if ($FUNCOES->GetLinhas()>0)
+{
+	$qnt = 0; $custoTT = 0; $horaTT = 0; setlocale(LC_MONETARY,"pt_BR", "ptb");
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{
+		/**/
+		$custoTT = $custoTT + $obj->custo; $horaTT = $horaTT + $obj->quantidade;
+		$listaSistemas[]="
+				<tr  title=\"Cadastrado em ".$FUNCOES->dataExterna($obj->dataCadastro)." as $obj->horaCadastro por $obj->usuarioCadastro \">
+					<td>$obj->nomeRecurso</td>
+					<td>$obj->nomeSistema</td>
+					<td>".substr($FUNCOES->dataExterna($obj->dataAlocacao), 3)."</td>
+					<td style=\"text-align: right;\">".$FUNCOES->formataValor($obj->quantidade)."</td>
+					<td style=\"text-align: right;\">R$ ".$FUNCOES->formataValor($obj->custo)."</td>
+					<td>".($edit?"<img src=\"./images/banlist_16.png\" style=\"text-align: center; cursor:hand; cursor:pointer;\" name=\"img\" alt=\"Excluir Sistema Impactado\" onclick=\"document.aplicacao.codigoSistemaImpactado.value=".$obj->codigoSistema."; executar('m001/r001/f001/excluirSistema','aplicacao')\">":" ")."</td>
+				</tr>";
+		/**/
+	}
+	$listaSistemas[]="
+				<tr>
+					<td colspan=\"3\">&nbsp;</td>
+					<td style=\"text-align: right; font-weight: bold;\">".$FUNCOES->formataValor($horaTT)."</td>
+					<td style=\"text-align: right; font-weight: bold;\">R$ ".$FUNCOES->formataValor($custoTT)."</td>
+					<td>&nbsp;</td>
+				</tr>";
+}
+
+if ($edit)
+{
+	$selectSistemas  	 = "<select class=\"form-control\" name=\"codigoSistema\" onChange=\"carregaSistemas(this.value)\" >";
+	if (isset($listaTiposSistemas)){  foreach($listaTiposSistemas as $value) { $selectSistemas .= $value; }	}
+	$selectSistemas 	.= "</select>";
+
+	$selectRecursos   	 = "<select class=\"form-control\" name=\"codigoRecursoSistemas\" >";
+	if (isset($listaRecursosSistemas)){  foreach($listaRecursosSistemas as $value) { $selectRecursos .= $value; }	}
+	$selectRecursos 	.= "</select>";
+
+	$periodosAlocacao 	 = "<select class=\"form-control\" name=\"dataAlocacao\" ><option value=\"\"></option>";
+	for ( $mesAtual = -3; $mesAtual < 6; $mesAtual++ ) {
+		$mes 		= substr(date('Y-m-d', strtotime($mesAtual.' months', strtotime(date('Y-m-d')))), 0, -2)."01";
+		$mesVisual 	= date('m/Y', strtotime($mesAtual.' months', strtotime(date('Y-m-d'))));
+		if ($mes == $dataAlocacao) { $value="selected";	} else { $value="";	}
+		$periodosAlocacao .= "<option $value value=\"$mes\">".$mesVisual."</option>";
+	}
+	$periodosAlocacao 	.= "</select>";
+
+	$listaSistemas[]="
+			<tr>
+				<td>$selectRecursos</td>
+				<td>$selectSistemas</td>
+				<td>$periodosAlocacao</td>
+				<td><input class=\"form-control\" id=\"valor1\" name=\"quantidade\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$custo\"></td>
+				<td><input class=\"form-control\" id=\"valor2\" name=\"custo\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$custo\"></td>
+				<td><img src=\"./images/mini-check.gif\" style=\"text-align: center; cursor:hand; cursor:pointer;\" name=\"img\" alt=\"Incluir Sistema Impactado\" onclick=\"executar('m001/r001/f001/cadastrarSistema','aplicacao')\"></td>
+			</tr>";
+}
+
+$listaSistemas[]="
 				</table>";
 
 /* */

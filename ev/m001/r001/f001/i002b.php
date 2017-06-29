@@ -6,6 +6,7 @@ $GLOBALS["DISCRICAOSISTEMA"]="Incluir Nova Frente";
 $codigoProjeto		="";	If (isset($_POST["codigoProjeto"])) 	{	$codigoProjeto		= $_POST["codigoProjeto"]; 		}
 $codigoFrente		="";	If (isset($_POST["codigoFrente"]))		{	$codigoFrente 		= $_POST["codigoFrente"]; 		}
 
+$idFrente			="";	If (isset($_POST["idFrente"]))			{	$idFrente 			= $_POST["idFrente"]; 			}
 $nomeFrente			="";	If (isset($_POST["nomeFrente"]))		{	$nomeFrente 		= $_POST["nomeFrente"]; 		}
 $descricaoFrente 	="";	If (isset($_POST["descricaoFrente"]))	{	$descricaoFrente 	= $_POST["descricaoFrente"];	}
 $codigoTipoProjeto	="";	If (isset($_POST["codigoTipoProjeto"]))	{	$codigoTipoProjeto 	= $_POST["codigoTipoProjeto"];	}
