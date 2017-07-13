@@ -1,6 +1,7 @@
 <?
 
 $codigoFrente		="";	If (isset($_POST["codigoFrente"]))		{	$codigoFrente 		= $_POST["codigoFrente"]; 		}
+$tipoPlanejamento	="";	If (isset($_POST["tipoPlanejamento"]))	{	$tipoPlanejamento 	= $_POST["tipoPlanejamento"]; 	}
 
 $FUNCOES->consulta(array ( 
 					"campos"	=> " fp.nomeFase, fp.codigoFase, mf.dataInicioMarco, mf.codigoFimMarco, mf.usuarioCadastro, mf.dataCadastro", 

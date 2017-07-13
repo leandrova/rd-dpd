@@ -33,17 +33,19 @@ $descricaoHistorico	="";
 $codigoFaseHistorico="";
 $codigoStatus		="";
 $nomeArea			="";
+$tipoPlanejamento		="";
 
 if (!isset($cadastro)) 
 {
 $descricaoHistorico	="";	If (isset($_POST["descricaoHistorico"]))	{	$descricaoHistorico	= $_POST["descricaoHistorico"];	}
 $codigoFaseHistorico="";	If (isset($_POST["codigoFaseHistorico"]))	{	$codigoFaseHistorico= $_POST["codigoFaseHistorico"];}
 $codigoStatus		="";	If (isset($_POST["codigoStatus"]))			{	$codigoStatus		= $_POST["codigoStatus"];		}
+$tipoPlanejamento	="";	If (isset($_POST["tipoPlanejamento"]))		{	$tipoPlanejamento	= $_POST["tipoPlanejamento"];	}
 }
 /* Busca Frentes do Projeto */
 $FUNCOES->consulta(array
 			(
-			"campos" 	=> "p1.codigoProjeto, p1.nomeProjeto, p1.descricao, p1.codigoProjetoPai, f1.codigoFrente, f1.prioridadeFrente, f1.idFrente, f1.nomeFrente, f1.codigoStatus, f1.codigoOrigem, f1.descricaoFrente, f1.codigoTipoProjeto, o1.nomeOrigem, f1.codigoFase, f1.codigoRecurso, r1.usuarioRecurso, f2.nomeFase, m1.horasEsforco, t1.descricaoTipo, u1.nome nomeRecurso, f1.codigoArea, as1.nomeArea",
+			"campos" 	=> "p1.codigoProjeto, p1.nomeProjeto, p1.descricao, p1.codigoProjetoPai, f1.codigoFrente, f1.prioridadeFrente, f1.idFrente, f1.nomeFrente, f1.codigoStatus, f1.codigoOrigem, f1.descricaoFrente, f1.codigoTipoProjeto, o1.nomeOrigem, f1.codigoFase, f1.codigoRecurso, r1.usuarioRecurso, f2.nomeFase, m1.horasEsforco, t1.descricaoTipo, u1.nome nomeRecurso, f1.codigoArea, as1.nomeArea, f1.tipoPlanejamento ",
 			"tabelas" 	=> "dcd_projetos p1, dcd_frentes f1, dcd_origemprojetos o1, dcd_tiposprojeto t1, dcd_fasesprojetos f2, dcd_recursos r1, dcd_memoriaprojetos m1, usuarios u1, dcd_areasolicitante as1",
 			"condicoes" => "p1.codigoProjeto = f1.codigoProjeto and f1.codigoOrigem = o1.codigoOrigem and r1.usuarioRecurso = u1.login and f1.codigoTipoProjeto = t1.codigoTipoProjeto and f1.codigoFase = f2.codigoFase and f1.codigoRecurso = r1.codigoRecurso and m1.codigoOrigem = f1.codigoOrigem and m1.codigoTipoProjeto = f1.codigoTipoProjeto and m1.codigoFase = f1.codigoFase and f1.codigoProjeto = $codigoProjeto and f1.codigoFrente = $codigoFrente and f1.codigoArea = as1.codigoArea",
 			"ordenacao" => "f1.dataCadastro"
@@ -71,6 +73,7 @@ if ($FUNCOES->GetLinhas()>0)
 	$codigoStatus		= $obj->codigoStatus;
 	$codigoArea			= $obj->codigoArea;
 	$nomeArea			= $obj->nomeArea;
+	$tipoPlanejamento	= $obj->tipoPlanejamento;
 }
 
 /* Dados complementares da tela */
@@ -342,8 +345,25 @@ foreach($listaMarcoProjeto as $key => $value){
 	}
 }
 
+$checkedPlanejado= '';
+$checkedPrevisto = 'checked';
+if ($tipoPlanejamento){
+	$checkedPlanejado = 'checked';
+	$checkedPrevisto = '';
+}
+
 $marcoProjeto[]="
-		<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+		<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>
+			<div class=\"input-group\" style=\"width: 95%; float: left;\">
+				<span class=\"input-group-addon\"><input type=\"radio\" name=\"tipoPlanejamento\" value=\"0\" $checkedPrevisto ></span>
+				<span class=\"form-control\">Previsto</span>
+				<span class=\"input-group-addon\"><input type=\"radio\" name=\"tipoPlanejamento\" value=\"1\" $checkedPlanejado ></span>
+				<span class=\"form-control\">Planejado</span>
+			</div>
+			<div style=\"float: right; margin-top: 9px;\">
+			<img src=\"./images/update.png\" alt=\"Atualizar\" style=\"cursor: pointer;\" onclick=\"executar('m001/r001/f001/atualizarTipoPlanejamento','aplicacao')\">
+			</div>
+		</td><td>&nbsp;</td>
 		</tr>
 	</tbody>
 	</table>";

@@ -67,9 +67,8 @@
 				else
 				{
 					$status="NOK (".$FUNCOES->GetMysqlError().")";
-				}
-				/**/
-				$listaProcess[]="
+
+					$listaProcess[]="
 			<tr>
 				<td>".$pieces[0]."</td>
 				<td>".$pieces[5]."</td>
@@ -78,6 +77,9 @@
 				<td>".substr($pieces[14]+100,1,2)."/".substr($FUNCOES->dataInterna(substr($pieces[7], 0, 10)),0,4)."</td>
 				<td>".$status."</td>
 			</tr>";
+
+				}
+				/**/
 			/**/
 			fwrite($fp, $pieces[0].';'.$pieces[5].';'.$pieces[6].';'.substr($pieces[7], 0, 10).';'.substr($pieces[14]+100,1,2)."/".substr($FUNCOES->dataInterna(substr($pieces[7], 0, 10)),0,4).';'.$status);
 			/**/
@@ -85,12 +87,17 @@
 			$i++;
 		}
 		/**/
-		mysql_query("	delete 
-						from 	dcd_sistemas ds, dcd_frentes df
-						where 	codigoRecursoSistemas = 3 and 
-								ds.codigoFrente = df.codigoFrente and
-								df.idFrente in (select id_requisicao from dcd_import di where di.id_requisicao = df.idFrente )
-				");
+		mysql_query("
+			delete
+			from 	dcd_sistemas
+			where 	codigoRecursoSistemas = 3 and 
+					codigoFrente in (
+            			select 	df.codigoFrente 
+            			from 	dcd_frentes df, dcd_import di
+            			where 	codigoFrente = df.codigoFrente and
+            					df.idFrente = di.id_requisicao
+        			)
+			");
 		/**/ 
 		mysql_query("	insert into dcd_sistemas (codigoTipoSistema, codigoFrente, codigoRecursoSistemas, dataAlocacao, quantidade)
 						select di.sistema, df.codigoFrente, 3, di.mes_ref, di.horas_planejadas FROM dcd_import di, dcd_frentes df where di.id_requisicao = df.idFrente");

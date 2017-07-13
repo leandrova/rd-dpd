@@ -132,7 +132,8 @@ $FUNCOES->consulta(array
 								(select  dataInicioMarco from dcd_marcofrente mf where mf.codigoFase = 8 and mf.codigoFrente = f1.codigoFrente order by codigoMarco desc limit 1) dataFimProjeto, 
 								as1.nomeArea,
 								(select  sum(quantidade) from dcd_sistemas ds where ds.codigoFrente = f1.codigoFrente) quantidadeJornadas,
-        						(select  sum(custo) from dcd_sistemas ds where ds.codigoFrente = f1.codigoFrente) custoJornadas ",
+        						(select  sum(custo) from dcd_sistemas ds where ds.codigoFrente = f1.codigoFrente) custoJornadas,
+        						f1.tipoPlanejamento ",
 			"tabelas" 	=> " 	dcd_projetos p1, dcd_frentes f1, dcd_origemprojetos o1, dcd_tiposprojeto t1, dcd_fasesprojetos f2, dcd_recursos r1, dcd_memoriaprojetos m1, dcd_statusprojeto s1, dcd_areasolicitante as1  ",
 			"condicoes"	=> " 	f1.codigoStatus = s1.codigoStatus and p1.codigoProjeto = f1.codigoProjeto and f1.codigoOrigem = o1.codigoOrigem and f1.codigoTipoProjeto = t1.codigoTipoProjeto and f1.codigoFase = f2.codigoFase and f1.codigoRecurso = r1.codigoRecurso and m1.codigoOrigem = f1.codigoOrigem and m1.codigoTipoProjeto = f1.codigoTipoProjeto and m1.codigoFase = f1.codigoFase and f1.codigoArea = as1.codigoArea and p1.nomeProjeto <> 'TESTE' and f2.codigoFase <> 10",
 			"ordenacao" => " 	16, 10, f1.nomeFrente, f1.dataCadastro "
@@ -155,9 +156,9 @@ if ($FUNCOES->GetLinhas()>0)
 			$status = "Projetos a serem planejados "; 
 		}
 		$objPHPExcel->getActiveSheet()->setCellValue("A".$linha, $status);
-		$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleTitulo2, "A".$linha.":L".$linha);
-		$objPHPExcel->getActiveSheet()->getStyle("A".$linha.":L".$linha)->getFont()->setBold(true);
-		$objPHPExcel->getActiveSheet()->mergeCells("A".$linha.":L".$linha);
+		$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleTitulo2, "A".$linha.":M".$linha);
+		$objPHPExcel->getActiveSheet()->getStyle("A".$linha.":M".$linha)->getFont()->setBold(true);
+		$objPHPExcel->getActiveSheet()->mergeCells("A".$linha.":M".$linha);
 		$linha=$linha+1;
 		$objPHPExcel->getActiveSheet()->setCellValue("A".$linha, 'Prioridade');
 		$objPHPExcel->getActiveSheet()->setCellValue("B".$linha, 'Codigo');
@@ -165,14 +166,15 @@ if ($FUNCOES->GetLinhas()>0)
 		$objPHPExcel->getActiveSheet()->setCellValue("D".$linha, 'Origem');
 		$objPHPExcel->getActiveSheet()->setCellValue("E".$linha, 'Projeto');
 		$objPHPExcel->getActiveSheet()->setCellValue("F".$linha, 'Release');
-		$objPHPExcel->getActiveSheet()->setCellValue("G".$linha, 'Fase');
-		$objPHPExcel->getActiveSheet()->setCellValue("H".$linha, 'Planejamento');
-		$objPHPExcel->getActiveSheet()->setCellValue("I".$linha, 'Historico');
-		$objPHPExcel->getActiveSheet()->setCellValue("J".$linha, 'Analista');
-		$objPHPExcel->getActiveSheet()->setCellValue("K".$linha, 'Jornadas');
-		$objPHPExcel->getActiveSheet()->setCellValue("L".$linha, 'Custo');
-		$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleTitulo, "A".$linha.":L".$linha."");
-		$objPHPExcel->getActiveSheet()->getStyle("A".$linha.":L".$linha)->getFont()->setBold(true);
+		$objPHPExcel->getActiveSheet()->setCellValue("G".$linha, 'Status');
+		$objPHPExcel->getActiveSheet()->setCellValue("H".$linha, 'Fase');
+		$objPHPExcel->getActiveSheet()->setCellValue("I".$linha, 'Planejamento');
+		$objPHPExcel->getActiveSheet()->setCellValue("J".$linha, 'Historico');
+		$objPHPExcel->getActiveSheet()->setCellValue("K".$linha, 'Analista');
+		$objPHPExcel->getActiveSheet()->setCellValue("L".$linha, 'Jornadas');
+		$objPHPExcel->getActiveSheet()->setCellValue("M".$linha, 'Custo');
+		$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleTitulo, "A".$linha.":M".$linha."");
+		$objPHPExcel->getActiveSheet()->getStyle("A".$linha.":M".$linha)->getFont()->setBold(true);
 		$linha=$linha+1;
 		}
 
@@ -186,7 +188,15 @@ if ($FUNCOES->GetLinhas()>0)
 		if ($obj->dataFimProjeto <> null) { $dataFimProjeto = $FUNCOES->dataExterna($obj->dataFimProjeto); } else { $dataFimProjeto = "TBD"; }
 		$objPHPExcel->getActiveSheet()->setCellValue("F".$linha, $dataFimProjeto);
 
-		$objPHPExcel->getActiveSheet()->setCellValue("G".$linha, $obj->nomeFase);
+		if ( ($obj->dataFimProjeto <> null) and ($obj->dataFimProjeto <> '0000-00-00') ) { 
+			$tipoPlanejamento = ($obj->tipoPlanejamento) ? 'Planejado' : 'Previsto'; 
+		} else { 
+			$tipoPlanejamento = ""; 
+		}
+
+		$objPHPExcel->getActiveSheet()->setCellValue("G".$linha, $tipoPlanejamento);
+
+		$objPHPExcel->getActiveSheet()->setCellValue("H".$linha, $obj->nomeFase);
 
 		/* Buscando Planejamento */
 		$res1 = mysql_query("
@@ -207,7 +217,7 @@ if ($FUNCOES->GetLinhas()>0)
 				}
 			}
 		}
-		$objPHPExcel->getActiveSheet()->setCellValue("H".$linha, ($planejamento));
+		$objPHPExcel->getActiveSheet()->setCellValue("I".$linha, ($planejamento));
 
 		/* Buscando Historico */
 		$res1 = mysql_query("
@@ -225,20 +235,20 @@ if ($FUNCOES->GetLinhas()>0)
 				$historico.=$FUNCOES->dataExterna($objj->dataHistorico)." - ".(strip_tags(html_entity_decode(($objj->descricaoHistorico))));
 			}
 		}
-		$objPHPExcel->getActiveSheet()->setCellValue("I".$linha, utf8_encode($historico));
+		$objPHPExcel->getActiveSheet()->setCellValue("J".$linha, utf8_encode($historico));
 		
-		$objPHPExcel->getActiveSheet()->setCellValue("J".$linha, $obj->usuarioRecurso);
+		$objPHPExcel->getActiveSheet()->setCellValue("K".$linha, $obj->usuarioRecurso);
 
-		$objPHPExcel->getActiveSheet()->setCellValue("K".$linha, $FUNCOES->formataValor($obj->quantidadeJornadas/8));
+		$objPHPExcel->getActiveSheet()->setCellValue("L".$linha, $FUNCOES->formataValor($obj->quantidadeJornadas/8));
 
-		$objPHPExcel->getActiveSheet()->setCellValue("L".$linha, "R$ ".$FUNCOES->formataValor($obj->custoJornadas));
+		$objPHPExcel->getActiveSheet()->setCellValue("M".$linha, "R$ ".$FUNCOES->formataValor($obj->custoJornadas));
 
 
 		/* Aplicando Style e Tamanho */
 		if ($tpStyle == 0) { 
-			$tpStyle=1;	$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleLinha1, "A".$linha.":L".$linha."");
+			$tpStyle=1;	$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleLinha1, "A".$linha.":M".$linha."");
 		} else { 
-			$tpStyle=0;	$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleLinha2, "A".$linha.":L".$linha."");
+			$tpStyle=0;	$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleLinha2, "A".$linha.":M".$linha."");
 		}
 		$objPHPExcel->getActiveSheet()->getRowDimension($linha)->setRowHeight(30);
 	}
@@ -248,10 +258,10 @@ if ($FUNCOES->GetLinhas()>0)
 $objPHPExcel->getActiveSheet()->setTitle('Status Release');
 
 /* Aplicando Alinhamento */
-$objPHPExcel->getActiveSheet()->getStyle("A1:L".$linha)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_TOP);
+$objPHPExcel->getActiveSheet()->getStyle("A1:M".$linha)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_TOP);
 
 /* Aplicando Quebra de Linha */
-$objPHPExcel->getActiveSheet()->getStyle("A1:L".$linha)->getAlignment()->setWrapText(true);
+$objPHPExcel->getActiveSheet()->getStyle("A1:M".$linha)->getAlignment()->setWrapText(true);
 
 // Largura e Altura das Linhas
 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
@@ -262,10 +272,11 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
 $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
 $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setAutoSize(true);
 $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
-$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(50);
-$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(50);
 $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setAutoSize(true);
 $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setAutoSize(true);
 
 // Aba de Projetos
 
