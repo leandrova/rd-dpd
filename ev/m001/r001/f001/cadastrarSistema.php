@@ -10,7 +10,7 @@
 	$quantidade				= "";	If (isset($_POST["quantidade"]))			{	$quantidade				= $_POST["quantidade"]; 			}
 	$custo					= "";	If (isset($_POST["custo"]))					{	$custo 					= $_POST["custo"]; 					}
 	//
-	if ( ($codigoFrente == "")||($codigoSistema == "")||($codigoRecursoSistemas == "")||($dataAlocacao == "")||($custo == "") )
+	if ( ($codigoFrente == "")||($codigoSistema == "")||($codigoRecursoSistemas == "")||($dataAlocacao == "") )
 	{
 		$msn="Informe todos os dados para incluir o novo sistema impactado.";
 	}else

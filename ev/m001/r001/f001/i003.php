@@ -239,7 +239,6 @@ if ($FUNCOES->GetLinhas()>0)
 $listaRecursosSistemas[]="<option value=\"\"></option>"; 
 $FUNCOES->consulta(array ( 
 					"tabelas" 	=> " dcd_recursosistemas ",
-					"condicoes"	=> " codigoRecursoSistemas <> 3 ",
 					"ordenacao" => " nomeRecurso "
  					) 
  				);
@@ -518,7 +517,7 @@ if ($edit)
 				<td>$selectRecursos</td>
 				<td>$selectSistemas</td>
 				<td>$periodosAlocacao</td>
-				<td><input class=\"form-control\" id=\"valor1\" name=\"quantidade\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$custo\"></td>
+				<td><input class=\"form-control\" id=\"valor1\" name=\"quantidade\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$quantidade\"></td>
 				<td><input class=\"form-control\" id=\"valor2\" name=\"custo\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$custo\"></td>
 				<td><img src=\"./images/mini-check.gif\" style=\"text-align: center; cursor:hand; cursor:pointer;\" name=\"img\" alt=\"Incluir Sistema Impactado\" onclick=\"executar('m001/r001/f001/cadastrarSistema','aplicacao')\"></td>
 			</tr>";

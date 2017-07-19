@@ -136,7 +136,7 @@ $FUNCOES->consulta(array
         						f1.tipoPlanejamento ",
 			"tabelas" 	=> " 	dcd_projetos p1, dcd_frentes f1, dcd_origemprojetos o1, dcd_tiposprojeto t1, dcd_fasesprojetos f2, dcd_recursos r1, dcd_memoriaprojetos m1, dcd_statusprojeto s1, dcd_areasolicitante as1  ",
 			"condicoes"	=> " 	f1.codigoStatus = s1.codigoStatus and p1.codigoProjeto = f1.codigoProjeto and f1.codigoOrigem = o1.codigoOrigem and f1.codigoTipoProjeto = t1.codigoTipoProjeto and f1.codigoFase = f2.codigoFase and f1.codigoRecurso = r1.codigoRecurso and m1.codigoOrigem = f1.codigoOrigem and m1.codigoTipoProjeto = f1.codigoTipoProjeto and m1.codigoFase = f1.codigoFase and f1.codigoArea = as1.codigoArea and p1.nomeProjeto <> 'TESTE' and f2.codigoFase <> 10 and f1.codigoStatus = 1 ",
-			"ordenacao" => " 	16, 10, f1.nomeFrente, f1.dataCadastro "
+			"ordenacao" => " 	16, f1.prioridadeFrente, o1.nomeOrigem, f1.nomeFrente, f1.dataCadastro "
 			)
 		);		
 if ($FUNCOES->GetLinhas()>0)
@@ -200,12 +200,11 @@ if ($FUNCOES->GetLinhas()>0)
 
 		/* Buscando Planejamento */
 		$res1 = mysql_query("
-				select df.nomeFase, dm.dataInicioMarco, dm.dataFimMarco
-				from dcd_marcofrente dm, dcd_fasesprojetos df 
-				where dm.codigoFase = df.codigoFase and codigoFrente = $obj->codigoFrente
-				group by dm.codigoFase
+				select fp.nomeFase, fp.codigoFase, mf.dataInicioMarco, mf.dataFimMarco, mf.codigoMarco, mf.usuarioCadastro, mf.dataCadastro
+				from dcd_fasesprojetos fp left join dcd_marcofrente mf on fp.codigoFase = mf.codigoFase and mf.codigoFrente = $obj->codigoFrente
+				order by fp.codigoFase, mf.codigoMarco
 			");
-		$linhass=mysql_affected_rows(); $planejamento="";
+		$linhass=mysql_affected_rows(); $planejamento=""; unset($listPlanejamento);
 		if ($linhass>0)
 		{ 
 			while ($objj=mysql_fetch_object($res1))
@@ -213,10 +212,20 @@ if ($FUNCOES->GetLinhas()>0)
 				if ( ($objj->dataInicioMarco <> '0000-00-00') or ($objj->dataFimMarco <> '0000-00-00') )
 				{
 					if ($planejamento <> "") { $planejamento.="\n"; }
-					$planejamento.=$objj->nomeFase." = ".$FUNCOES->dataExterna($objj->dataInicioMarco)." ".$FUNCOES->dataExterna($objj->dataFimMarco);
+					$listPlanejamento[$objj->codigoFase]['nomeFase'] 		= $objj->nomeFase;
+					$listPlanejamento[$objj->codigoFase]['dataInicioMarco'] = $FUNCOES->dataExterna($objj->dataInicioMarco);
+					$listPlanejamento[$objj->codigoFase]['dataFimMarco'] 	= $FUNCOES->dataExterna($objj->dataFimMarco);
 				}
 			}
 		}
+		
+		foreach ($listPlanejamento as $key => $value) {
+			if ($planejamento <> "") { $planejamento.="\n"; }
+			if ( ($listPlanejamento[$key]['dataInicioMarco'] <> "") or ($listPlanejamento[$key]['dataFimMarco'] <> "") ){
+				$planejamento .= $listPlanejamento[$key]['nomeFase']." = ".$listPlanejamento[$key]['dataInicioMarco']." ".$listPlanejamento[$key]['dataFimMarco'];
+			}
+		}
+
 		$objPHPExcel->getActiveSheet()->setCellValue("I".$linha, ($planejamento));
 
 		/* Buscando Historico */
