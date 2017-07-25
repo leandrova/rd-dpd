@@ -372,7 +372,8 @@ $FUNCOES->consulta(array
 							m1.codigoTipoProjeto = f1.codigoTipoProjeto and 
 							m1.codigoFase = f1.codigoFase and 
 							f1.codigoArea = as1.codigoArea and
-							f1.codigoOrigem = 3 ",
+							f1.codigoOrigem = 3 and 
+							f1.codigoStatus = 1 ",
 			"ordenacao" => "p1.nomeProjeto, 
 							f1.nomeFrente, 
 							f1.dataCadastro "
@@ -748,17 +749,308 @@ $objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleBranco, "A1:AI50");
 //	Add the chart to the worksheet
 $objWorksheet->addChart($chart);
 
-// Set document security
-/*$objPHPExcel->getSecurity()->setLockWindows(true);
-$objPHPExcel->getSecurity()->setLockStructure(true);
-$objPHPExcel->getSecurity()->setWorkbookPassword("DPD");*/
+/* #################### Fim Definindo Aba 7 ######################## */
 
-// Set sheet security
-/*$objPHPExcel->getActiveSheet()->getProtection()->setPassword('PDP');
-$objPHPExcel->getActiveSheet()->getProtection()->setSheet(true); // This should be enabled in order to enable any of the following!
-$objPHPExcel->getActiveSheet()->getProtection()->setSort(true);
-$objPHPExcel->getActiveSheet()->getProtection()->setInsertRows(true);
-$objPHPExcel->getActiveSheet()->getProtection()->setFormatCells(true);*/
+/* #################### Definindo Aba 7 ######################## */
+
+$objPHPExcel->createSheet();
+$objPHPExcel->setActiveSheetIndex(4);
+
+// Rename worksheet
+$objPHPExcel->getActiveSheet()->setTitle('Grafico_Fases_Projetos_PPs');
+
+$objWorksheet = $objPHPExcel->getActiveSheet();
+
+unset($arrayGrafico); unset($arrayTT);
+$arrayGrafico[]= array('Fases','Quantidade'); $linhas = 1;
+
+$FUNCOES->consulta(array
+			(
+			"campos" 	=> " dp.nomeFase , count(1) quantidade ",
+			"tabelas" 	=> " dcd_frentes df, dcd_fasesprojetos dp ",
+			"condicoes"	=> " codigoOrigem = 3 and 
+							 df.codigoFase = dp.codigoFase and 
+							 df.codigoFase <> 10 and
+							 df.codigoStatus = 1
+							 group by dp.nomeFase ",
+			"ordenacao" => " df.codigoFase "
+			)
+		);		
+if ($FUNCOES->GetLinhas()>0)
+{
+	unset($array);
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{
+		$arrayGrafico[] = array($obj->nomeFase, $obj->quantidade);
+		$linhas++;
+	}
+}
+
+$objWorksheet->fromArray($arrayGrafico);
+
+$dataseriesLabels = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Fases_Projetos_PPs!$A$1', NULL, 1),
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Fases_Projetos_PPs!$B$1', NULL, 1),
+);
+
+$xAxisTickValues = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Fases_Projetos_PPs!$A$2:$A$'.$linhas.'', NULL, 4),	//	Q1 to Q4
+);
+
+$dataSeriesValues = array(
+	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Fases_Projetos_PPs!$B$2:$B$'.$linhas.'', NULL, 4),
+);
+
+$series = new PHPExcel_Chart_DataSeries(
+	PHPExcel_Chart_DataSeries::TYPE_BARCHART,		// plotType
+	PHPExcel_Chart_DataSeries::GROUPING_STANDARD,	// plotGrouping
+	range(0, count($dataSeriesValues)-1),			// plotOrder
+	$dataseriesLabels,								// plotLabel
+	$xAxisTickValues,								// plotCategory
+	$dataSeriesValues								// plotValues
+);
+
+$series->setPlotDirection(PHPExcel_Chart_DataSeries::DIRECTION_COL);
+
+//	Set the series in the plot area
+$plotarea = new PHPExcel_Chart_PlotArea(NULL, array($series));
+//	Set the chart legend
+$legend = new PHPExcel_Chart_Legend(PHPExcel_Chart_Legend::POSITION_RIGHT, NULL, false);
+
+$title = new PHPExcel_Chart_Title('Fases PPs');
+$yAxisLabel = new PHPExcel_Chart_Title('Quantidade');
+
+//	Create the chart
+$chart = new PHPExcel_Chart(
+	'chart1',		// name
+	$title,			// title
+	$legend,		// legend
+	$plotarea,		// plotArea
+	true,			// plotVisibleOnly
+	0,				// displayBlanksAs
+	NULL,			// xAxisLabel
+	$yAxisLabel		// yAxisLabel
+);
+
+//	Set the position where the chart should appear in the worksheet
+$chart->setTopLeftPosition('A1');
+$chart->setBottomRightPosition('O25');
+
+// style
+$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleBranco, "A1:AI50");
+
+//	Add the chart to the worksheet
+$objWorksheet->addChart($chart);
+
+/* #################### Fim Definindo Aba 7 ######################## */
+
+/* #################### Definindo Aba 7 ######################## */
+
+$objPHPExcel->createSheet();
+$objPHPExcel->setActiveSheetIndex(5);
+
+// Rename worksheet
+$objPHPExcel->getActiveSheet()->setTitle('Grafico_Projetos_Alocacao_PPs');
+
+$objWorksheet = $objPHPExcel->getActiveSheet();
+
+unset($arrayGrafico); unset($arrayTT);
+//$arrayGrafico[]= array('Alocacao', 'Fases', 'Quantidade'); $linhas = 1;
+
+$FUNCOES->consulta(array
+			(
+			"tabelas" 	=> " 
+							 (
+								SELECT 	dr.usuarioRecurso, df.codigoFase, dp.nomeFase, count(1) quantidade
+								FROM 	dcd_frentes df, dcd_recursos dr, dcd_fasesprojetos dp
+								WHERE	df.codigoRecurso = dr.codigoRecurso and df.codigoFase = dp.codigoFase and 
+										df.codigoProjeto <> 1 and df.codigoFase <> 10 and df.codigoStatus = 1
+								group by dr.usuarioRecurso, df.codigoFase, dp.nomeFase
+								UNION ALL
+								SELECT 	dr.usuarioRecurso, 99 codigoFase, 'Total' nomeFase, count(1) quantidade
+								FROM 	dcd_frentes df, dcd_recursos dr, dcd_fasesprojetos dp
+								WHERE	df.codigoRecurso = dr.codigoRecurso and df.codigoFase = dp.codigoFase and 
+										df.codigoProjeto <> 1 and df.codigoFase <> 10 and df.codigoStatus = 1
+								group by dr.usuarioRecurso
+    						 ) tabela
+			",
+			"ordenacao" => " 1, 2 "
+			)
+		);		
+if ($FUNCOES->GetLinhas()>0)
+{
+	unset($array); $usuarioRecurso = ""; $linhas = 0;
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{
+		if ( $usuarioRecurso <> $obj->usuarioRecurso ) { $usuarioRecurso = $obj->usuarioRecurso; $nome=$usuarioRecurso; } else { $nome = ""; }
+		$arrayGrafico[] = array($nome, $obj->nomeFase, $obj->quantidade);
+		$linhas++;
+	}
+}
+
+$objWorksheet->fromArray($arrayGrafico);
+
+$dataseriesLabels = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Projetos_Alocacao_PPs!$A$'.$linhas.'', NULL, 1),
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Projetos_Alocacao_PPs!$B$'.$linhas.'', NULL, 1),
+);
+
+$xAxisTickValues = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Projetos_Alocacao_PPs!$A$1:$B$'.$linhas.'', NULL, 4),	//	Q1 to Q4
+);
+
+$dataSeriesValues = array(
+	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Projetos_Alocacao_PPs!$C$1:$C$'.$linhas.'', NULL, 4),
+);
+
+$series = new PHPExcel_Chart_DataSeries(
+	PHPExcel_Chart_DataSeries::TYPE_BARCHART,		// plotType
+	PHPExcel_Chart_DataSeries::GROUPING_STANDARD,	// plotGrouping
+	range(0, count($dataSeriesValues)-1),			// plotOrder
+	$dataseriesLabels,								// plotLabel
+	$xAxisTickValues,								// plotCategory
+	$dataSeriesValues								// plotValues
+);
+
+$series->setPlotDirection(PHPExcel_Chart_DataSeries::DIRECTION_COL);
+
+//	Set the series in the plot area
+$plotarea = new PHPExcel_Chart_PlotArea(NULL, array($series));
+//	Set the chart legend
+$legend = new PHPExcel_Chart_Legend(PHPExcel_Chart_Legend::POSITION_RIGHT, NULL, false);
+
+$title = new PHPExcel_Chart_Title('Alocacao PPs');
+$yAxisLabel = new PHPExcel_Chart_Title('Quantidade');
+
+//	Create the chart
+$chart = new PHPExcel_Chart(
+	'chart1',		// name
+	$title,			// title
+	$legend,		// legend
+	$plotarea,		// plotArea
+	true,			// plotVisibleOnly
+	0,				// displayBlanksAs
+	NULL,			// xAxisLabel
+	$yAxisLabel		// yAxisLabel
+);
+
+//	Set the position where the chart should appear in the worksheet
+$chart->setTopLeftPosition('A1');
+$chart->setBottomRightPosition('O25');
+
+// style
+$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleBranco, "A1:AI50");
+
+//	Add the chart to the worksheet
+$objWorksheet->addChart($chart);
+
+/* #################### Fim Definindo Aba 7 ######################## */
+
+/* #################### Definindo Aba 8 ######################## */
+
+$objPHPExcel->createSheet();
+$objPHPExcel->setActiveSheetIndex(6);
+
+// Rename worksheet
+$objPHPExcel->getActiveSheet()->setTitle('Grafico_Projetos_Segmento_PPs');
+
+$objWorksheet = $objPHPExcel->getActiveSheet();
+
+unset($arrayGrafico); unset($arrayTT);
+//$arrayGrafico[]= array('Alocacao', 'Fases', 'Quantidade'); $linhas = 1;
+
+$FUNCOES->consulta(array
+			(
+			"tabelas" 	=> " 
+							 (
+								SELECT	dp.nomeProjeto, dfp.codigoFase, dfp.nomeFase, count(1) quantidade
+								FROM	dcd_frentes df, dcd_projetos dp, dcd_fasesprojetos dfp
+								WHERE	df.codigoProjeto = dp.codigoProjeto and 
+										df.codigoFase = dfp.codigoFase and
+										df.codigoProjeto <> 1 and 
+										df.codigoFase <> 10 and 
+										df.codigoStatus = 1
+								GROUP BY 1, 2, 3
+								UNION ALL
+								SELECT	dp.nomeProjeto, 99 codigoFase, 'Total' quantidade, count(1)
+								FROM	dcd_frentes df, dcd_projetos dp, dcd_fasesprojetos dfp
+								WHERE	df.codigoProjeto = dp.codigoProjeto and 
+										df.codigoFase = dfp.codigoFase and
+										df.codigoProjeto <> 1 and 
+										df.codigoFase <> 10 and 
+										df.codigoStatus = 1
+								GROUP BY 1, 2, 3
+    						 ) tabela
+			",
+			"ordenacao" => " 1, 2 "
+			)
+		);		
+if ($FUNCOES->GetLinhas()>0)
+{
+	unset($array); $nomeProjeto = ""; $linhas = 0;
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{
+		if ( $nomeProjeto <> $obj->nomeProjeto ) { $nomeProjeto = $obj->nomeProjeto; $nome=$nomeProjeto; } else { $nome = ""; }
+		$arrayGrafico[] = array($nome, $obj->nomeFase, $obj->quantidade);
+		$linhas++;
+	}
+}
+
+$objWorksheet->fromArray($arrayGrafico);
+
+$dataseriesLabels = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Projetos_Segmento_PPs!$A$'.$linhas.'', NULL, 1),
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Projetos_Segmento_PPs!$B$'.$linhas.'', NULL, 1),
+);
+
+$xAxisTickValues = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Projetos_Segmento_PPs!$A$1:$B$'.$linhas.'', NULL, 4),	//	Q1 to Q4
+);
+
+$dataSeriesValues = array(
+	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Projetos_Segmento_PPs!$C$1:$C$'.$linhas.'', NULL, 4),
+);
+
+$series = new PHPExcel_Chart_DataSeries(
+	PHPExcel_Chart_DataSeries::TYPE_BARCHART,		// plotType
+	PHPExcel_Chart_DataSeries::GROUPING_STANDARD,	// plotGrouping
+	range(0, count($dataSeriesValues)-1),			// plotOrder
+	$dataseriesLabels,								// plotLabel
+	$xAxisTickValues,								// plotCategory
+	$dataSeriesValues								// plotValues
+);
+
+$series->setPlotDirection(PHPExcel_Chart_DataSeries::DIRECTION_COL);
+
+//	Set the series in the plot area
+$plotarea = new PHPExcel_Chart_PlotArea(NULL, array($series));
+//	Set the chart legend
+$legend = new PHPExcel_Chart_Legend(PHPExcel_Chart_Legend::POSITION_RIGHT, NULL, false);
+
+$title = new PHPExcel_Chart_Title('Alocacao por Segmento PPs');
+$yAxisLabel = new PHPExcel_Chart_Title('Quantidade');
+
+//	Create the chart
+$chart = new PHPExcel_Chart(
+	'chart1',		// name
+	$title,			// title
+	$legend,		// legend
+	$plotarea,		// plotArea
+	true,			// plotVisibleOnly
+	0,				// displayBlanksAs
+	NULL,			// xAxisLabel
+	$yAxisLabel		// yAxisLabel
+);
+
+//	Set the position where the chart should appear in the worksheet
+$chart->setTopLeftPosition('A1');
+$chart->setBottomRightPosition('O25');
+
+// style
+$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleBranco, "A1:AI50");
+
+//	Add the chart to the worksheet
+$objWorksheet->addChart($chart);
 
 /* #################### Fim Definindo Aba 7 ######################## */
 
