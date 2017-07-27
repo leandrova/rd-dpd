@@ -618,35 +618,76 @@ $objPHPExcel->getActiveSheet()->setTitle('Grafico_Jornadas_Mes_PPs');
 $objWorksheet = $objPHPExcel->getActiveSheet();
 
 unset($arrayGrafico); unset($arrayTT);
-$arrayGrafico[]= array('','Total','Desenvolvimento','Testes', 'Líder PP', 'Analista Funcional'); $linhas = 1;
+$arrayGrafico[]= array('', 'Total', 'Dev', 'Dev Loja', 'Dev Easy', 'Testes', 'Líder PP', 'Analista Funcional'); $linhas = 1;
 
 $FUNCOES->consulta(array
 			(
 			"campos" 	=> "
 							ds.dataAlocacao, 
-				            (	select 	convert(sum(ds1.quantidade)/8, DECIMAL(10,2)) jornadas 
+							(	select 	convert(sum(ds1.quantidade)/8, DECIMAL(10,2)) jornadas 
 				            	from 	dcd_sistemas ds1 
 				            	where 	ds1.codigoRecursoSistemas = 3 and 
 				            			ds1.dataAlocacao = ds.dataAlocacao and 
-				            			ds1.codigoTipoSistema <> 132 and
 				            			ds1.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds1.codigoFrente and
 				            											df.codigoOrigem = 3
 				            								)
-				            ) jornadasDesenvolvimento,
-				            (
-				            	select 	convert(sum(ds2.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            ) jornadas,
+				            (	select 	convert(sum(ds2.quantidade)/8, DECIMAL(10,2)) jornadas 
 				            	from 	dcd_sistemas ds2 
 				            	where 	ds2.codigoRecursoSistemas = 3 and 
 				            			ds2.dataAlocacao = ds.dataAlocacao and 
-				            			ds2.codigoTipoSistema = 132
+				            			ds2.codigoTipoSistema not in (70, 132, 141) and
+				            			ds2.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds2.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimento,
+				            (	select 	convert(sum(ds3.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds3 
+				            	where 	ds3.codigoRecursoSistemas = 3 and 
+				            			ds3.dataAlocacao = ds.dataAlocacao and 
+				            			ds3.codigoTipoSistema in (70) and
+				            			ds3.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds3.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimentoLoja,
+				            (	select 	convert(sum(ds4.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds4 
+				            	where 	ds4.codigoRecursoSistemas = 3 and 
+				            			ds4.dataAlocacao = ds.dataAlocacao and 
+				            			ds4.codigoTipoSistema in (141) and
+				            			ds4.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds4.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimentoEasy,
+				            (
+				            	select 	convert(sum(ds5.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds5 
+				            	where 	ds5.codigoRecursoSistemas = 3 and 
+				            			ds5.dataAlocacao = ds.dataAlocacao and 
+				            			ds5.codigoTipoSistema in (132) and
+				            			ds5.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds5.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
 				            ) jornadasTestes,
 				            (
 				            	select 	convert(sum(jf1.quantidade), DECIMAL(10,2)) jornadas 
 				            	from 	dcd_jornadasfixas jf1 
 				            	where 	jf1.dataAlocacao = ds.dataAlocacao and 
-				            			jf1.nomeRecurso = 'ANALISTA FUNCIONAL'
+				            			jf1.nomeRecurso = 'ANALISTA FUNCIONAL' and
+				            			jf1.codigoRecurso in (	select 	df.codigoRecurso
+				            									from 	dcd_frentes df
+				            									where 	df.codigoOrigem = 3
+				            								)
 				            ) jornadasAnalista,
 				            (
 				            	select 	convert(sum(jf2.quantidade), DECIMAL(10,2)) jornadas 
@@ -665,10 +706,18 @@ if ($FUNCOES->GetLinhas()>0)
 	unset($array);
 	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
 	{
-		$horasTT = ($obj->jornadasDesenvolvimento + 0) + ($obj->jornadasTestes + 0) + ($obj->jornadasAnalista + 0) + ($obj->jornadasLider + 0);
+		$horasTT = 	($obj->jornadasDesenvolvimento + 0) + 
+					($obj->jornadasTestes + 0) + 
+					($obj->jornadasAnalista + 0) + 
+					($obj->jornadasLider + 0) +
+					($obj->jornadasDesenvolvimentoLoja + 0) +
+					($obj->jornadasDesenvolvimentoEasy + 0);
+
 		$array[$obj->dataAlocacao] = array ( 
 						'jornadasTotal' => $horasTT,
 						'jornadasDesenvolvimento' => ($obj->jornadasDesenvolvimento + 0),
+						'jornadasDesenvolvimentoLoja' => ($obj->jornadasDesenvolvimentoLoja + 0),
+						'jornadasDesenvolvimentoEasy' => ($obj->jornadasDesenvolvimentoEasy + 0),
 						'jornadasTestes' => ($obj->jornadasTestes + 0),
 						'jornadasLider' => ($obj->jornadasLider + 0),
 						'jornadasAnalista' => ($obj->jornadasAnalista + 0)
@@ -676,13 +725,19 @@ if ($FUNCOES->GetLinhas()>0)
 	}
 }
 
-
-
 $keyy = "";
 foreach ($array as $key => $value) {
 	if ($keyy == "") { $keyy = $key; }
 	$dataAlocacao = $key;
-	$arrayGrafico[] = array(substr($FUNCOES->dataExterna($dataAlocacao), -6), $value['jornadasTotal'], $value['jornadasDesenvolvimento'], $value['jornadasTestes'], $value['jornadasLider'], $value['jornadasAnalista']);
+	$arrayGrafico[] = array(
+						substr($FUNCOES->dataExterna($dataAlocacao), -6), 
+						$value['jornadasTotal'], 
+						$value['jornadasDesenvolvimento'], 
+						$value['jornadasDesenvolvimentoLoja'], 
+						$value['jornadasDesenvolvimentoEasy'], 
+						$value['jornadasTestes'], 
+						$value['jornadasLider'], 
+						$value['jornadasAnalista']);
 	$linhas++;
 }
 
@@ -694,7 +749,10 @@ $dataseriesLabels = array(
 	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Jornadas_Mes_PPs!$D$1', NULL, 1),
 	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Jornadas_Mes_PPs!$E$1', NULL, 1),
 	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Jornadas_Mes_PPs!$F$1', NULL, 1),
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Jornadas_Mes_PPs!$G$1', NULL, 1),
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Jornadas_Mes_PPs!$H$1', NULL, 1),
 );
+
 
 $xAxisTickValues = array(
 	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Jornadas_Mes_PPs!$A$2:$A$'.$linhas.'', NULL, 4),	//	Q1 to Q4
@@ -706,6 +764,8 @@ $dataSeriesValues = array(
 	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Jornadas_Mes_PPs!$D$2:$D$'.$linhas.'', NULL, 4),
 	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Jornadas_Mes_PPs!$E$2:$E$'.$linhas.'', NULL, 4),
 	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Jornadas_Mes_PPs!$F$2:$F$'.$linhas.'', NULL, 4),
+	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Jornadas_Mes_PPs!$G$2:$G$'.$linhas.'', NULL, 4),
+	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Jornadas_Mes_PPs!$H$2:$H$'.$linhas.'', NULL, 4),
 );
 
 $series = new PHPExcel_Chart_DataSeries(
@@ -1029,6 +1089,238 @@ $legend = new PHPExcel_Chart_Legend(PHPExcel_Chart_Legend::POSITION_RIGHT, NULL,
 
 $title = new PHPExcel_Chart_Title('Alocacao por Segmento PPs');
 $yAxisLabel = new PHPExcel_Chart_Title('Quantidade');
+
+//	Create the chart
+$chart = new PHPExcel_Chart(
+	'chart1',		// name
+	$title,			// title
+	$legend,		// legend
+	$plotarea,		// plotArea
+	true,			// plotVisibleOnly
+	0,				// displayBlanksAs
+	NULL,			// xAxisLabel
+	$yAxisLabel		// yAxisLabel
+);
+
+//	Set the position where the chart should appear in the worksheet
+$chart->setTopLeftPosition('A1');
+$chart->setBottomRightPosition('O25');
+
+// style
+$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleBranco, "A1:AI50");
+
+//	Add the chart to the worksheet
+$objWorksheet->addChart($chart);
+
+/* #################### Fim Definindo Aba 7 ######################## */
+
+/* #################### Definindo Aba 7 ######################## */
+
+$objPHPExcel->createSheet();
+$objPHPExcel->setActiveSheetIndex(7);
+
+// Rename worksheet
+$objPHPExcel->getActiveSheet()->setTitle('Grafico_Jornadas_Mes_Dev_PPs');
+
+$objWorksheet = $objPHPExcel->getActiveSheet();
+
+unset($arrayGrafico); unset($arrayTT);
+//$arrayGrafico[]= array('', 'Total', 'MV PF Fixa', 'MV PF Móvel', 'MV PJ', 'Portal', 'Loja', 'Vivo Easy', 'Demais', 'Testes' ); $linhas = 1;
+
+$FUNCOES->consulta(array
+			(
+			"campos" 	=> "
+							ds.dataAlocacao, 
+							(	select 	convert(sum(ds1.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds1 
+				            	where 	ds1.codigoRecursoSistemas = 3 and 
+				            			ds1.dataAlocacao = ds.dataAlocacao and 
+				            			ds1.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds1.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadas,
+				            (	select 	convert(sum(ds2.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds2 
+				            	where 	ds2.codigoRecursoSistemas = 3 and 
+				            			ds2.dataAlocacao = ds.dataAlocacao and 
+				            			ds2.codigoTipoSistema in (59) and
+				            			ds2.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds2.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimentoMVPFFixa,
+                            (	select 	convert(sum(ds2.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds2 
+				            	where 	ds2.codigoRecursoSistemas = 3 and 
+				            			ds2.dataAlocacao = ds.dataAlocacao and 
+				            			ds2.codigoTipoSistema in (60) and
+				            			ds2.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds2.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimentoMVPFMovel,
+                            (	select 	convert(sum(ds2.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds2 
+				            	where 	ds2.codigoRecursoSistemas = 3 and 
+				            			ds2.dataAlocacao = ds.dataAlocacao and 
+				            			ds2.codigoTipoSistema in (61) and
+				            			ds2.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds2.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimentoMVPJ,
+                            (	select 	convert(sum(ds2.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds2 
+				            	where 	ds2.codigoRecursoSistemas = 3 and 
+				            			ds2.dataAlocacao = ds.dataAlocacao and 
+				            			ds2.codigoTipoSistema in (80) and
+				            			ds2.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds2.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimentoPortal,
+				            (	select 	convert(sum(ds3.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds3 
+				            	where 	ds3.codigoRecursoSistemas = 3 and 
+				            			ds3.dataAlocacao = ds.dataAlocacao and 
+				            			ds3.codigoTipoSistema in (70) and
+				            			ds3.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds3.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimentoLoja,
+				            (	select 	convert(sum(ds4.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds4 
+				            	where 	ds4.codigoRecursoSistemas = 3 and 
+				            			ds4.dataAlocacao = ds.dataAlocacao and 
+				            			ds4.codigoTipoSistema in (141) and
+				            			ds4.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds4.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimentoEasy,
+                            (
+				            	select 	convert(sum(ds5.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds5 
+				            	where 	ds5.codigoRecursoSistemas = 3 and 
+				            			ds5.dataAlocacao = ds.dataAlocacao and 
+				            			ds5.codigoTipoSistema not in (59, 60, 61, 70, 80, 132, 141) and
+				            			ds5.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds5.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasDesenvolvimentoDemais,
+				            (
+				            	select 	convert(sum(ds5.quantidade)/8, DECIMAL(10,2)) jornadas 
+				            	from 	dcd_sistemas ds5 
+				            	where 	ds5.codigoRecursoSistemas = 3 and 
+				            			ds5.dataAlocacao = ds.dataAlocacao and 
+				            			ds5.codigoTipoSistema in (132) and
+				            			ds5.codigoFrente in (	select 	df.codigoFrente 
+				            									from 	dcd_frentes df
+				            									where 	df.codigoFrente = ds5.codigoFrente and
+				            											df.codigoOrigem = 3
+				            								)
+				            ) jornadasTestes,
+				            (
+				            	select 	convert(sum(jf1.quantidade), DECIMAL(10,2)) jornadas 
+				            	from 	dcd_jornadasfixas jf1 
+				            	where 	jf1.dataAlocacao = ds.dataAlocacao and 
+				            			jf1.nomeRecurso = 'ANALISTA FUNCIONAL' and
+				            			jf1.codigoRecurso in (	select 	df.codigoRecurso
+				            									from 	dcd_frentes df
+				            									where 	df.codigoOrigem = 3
+				            								)
+				            ) jornadasAnalista,
+				            (
+				            	select 	convert(sum(jf2.quantidade), DECIMAL(10,2)) jornadas 
+				            	from 	dcd_jornadasfixas jf2 
+				            	where 	jf2.dataAlocacao = ds.dataAlocacao and 
+				            			jf2.nomeRecurso = 'LÍDER PP'
+				            ) jornadasLider 
+							 ",
+			"tabelas" 	=> " dcd_sistemas ds, dcd_frentes df, dcd_origemprojetos dp ",
+			"condicoes"	=> " ds.codigoFrente = df.codigoFrente and df.codigoOrigem = dp.codigoOrigem and df.codigoOrigem = 3 group by 1 ",
+			"ordenacao" => " ds.dataAlocacao "
+			)
+		);		
+if ($FUNCOES->GetLinhas()>0)
+{
+	unset($array);
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{
+		$array[$obj->dataAlocacao] = array ( 
+						'jornadasTotal' => $obj->jornadas,
+						'jornadasDesenvolvimentoMVPFFixa' => ($obj->jornadasDesenvolvimentoMVPFFixa + 0),
+						'jornadasDesenvolvimentoMVPFMovel' => ($obj->jornadasDesenvolvimentoMVPFMovel + 0),
+						'jornadasDesenvolvimentoMVPJ' => ($obj->jornadasDesenvolvimentoMVPJ + 0),
+						'jornadasDesenvolvimentoPortal' => ($obj->jornadasDesenvolvimentoPortal + 0),
+						'jornadasDesenvolvimentoLoja' => ($obj->jornadasDesenvolvimentoLoja + 0),
+						'jornadasDesenvolvimentoEasy' => ($obj->jornadasDesenvolvimentoEasy + 0),
+						'jornadasDesenvolvimentoDemais' => ($obj->jornadasDesenvolvimentoDemais + 0),
+						'jornadasTestes' => ($obj->jornadasTestes + 0)
+					);
+	}
+}
+
+$keyy = "";
+foreach ($array as $key => $value) {
+	if ($keyy == "") { $keyy = $key; }
+	$dataAlocacao = $key;
+	$arrayGrafico[] = array(substr($FUNCOES->dataExterna($dataAlocacao), -6), 'Total', $value['jornadasTotal']	); $linhas++;
+	$arrayGrafico[] = array('', 'MV PF Fixa'	, $value['jornadasDesenvolvimentoMVPFFixa']						); $linhas++;
+	$arrayGrafico[] = array('', 'MV PF Móvel'	, $value['jornadasDesenvolvimentoMVPFMovel']					); $linhas++;
+	$arrayGrafico[] = array('', 'MV PJ'			, $value['jornadasDesenvolvimentoMVPJ']							); $linhas++;
+	$arrayGrafico[] = array('', 'Portal'		, $value['jornadasDesenvolvimentoPortal']						); $linhas++;
+	$arrayGrafico[] = array('', 'Loja'			, $value['jornadasDesenvolvimentoLoja']							); $linhas++;
+	$arrayGrafico[] = array('', 'Vivo Easy'		, $value['jornadasDesenvolvimentoEasy']							); $linhas++;
+	$arrayGrafico[] = array('', 'Demais'		, $value['jornadasDesenvolvimentoDemais']						); $linhas++;
+	$arrayGrafico[] = array('', 'Testes'		,$value['jornadasTestes']										); $linhas++;
+}
+
+$objWorksheet->fromArray($arrayGrafico);
+
+unset($dataseriesLabels, $xAxisTickValues, $dataSeriesValues);
+
+$dataseriesLabels = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Jornadas_Mes_Dev_PPs!$C$1', NULL, 1)
+);
+
+$xAxisTickValues = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Jornadas_Mes_Dev_PPs!$A$1:$B$'.$linhas.'', NULL, 4),	//	Q1 to Q4
+);
+
+$dataSeriesValues = array(
+	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Jornadas_Mes_Dev_PPs!$C$1:$C$'.$linhas.'', NULL, 4)
+);
+
+$series = new PHPExcel_Chart_DataSeries(
+	PHPExcel_Chart_DataSeries::TYPE_BARCHART,		// plotType
+	PHPExcel_Chart_DataSeries::GROUPING_STANDARD,	// plotGrouping
+	range(0, count($dataSeriesValues)-1),			// plotOrder
+	$dataseriesLabels,								// plotLabel
+	$xAxisTickValues,								// plotCategory
+	$dataSeriesValues								// plotValues
+);
+
+$series->setPlotDirection(PHPExcel_Chart_DataSeries::DIRECTION_COL);
+
+//	Set the series in the plot area
+$plotarea = new PHPExcel_Chart_PlotArea(NULL, array($series));
+//	Set the chart legend
+$legend = new PHPExcel_Chart_Legend(PHPExcel_Chart_Legend::POSITION_RIGHT, NULL, false);
+
+$title = new PHPExcel_Chart_Title('Jornadas Desenvolvimento');
+$yAxisLabel = new PHPExcel_Chart_Title('Jornadas');
 
 //	Create the chart
 $chart = new PHPExcel_Chart(
