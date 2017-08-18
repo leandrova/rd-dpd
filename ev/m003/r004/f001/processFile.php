@@ -54,9 +54,13 @@
 				/**/
 				$FUNCOES->cadastro(
 						array(
-							"campos" 	=> " id_requisicao, sistema, horas_planejadas, mes_ref ",
+							"campos" 	=> " id_requisicao, sistema, horas_planejadas, mes_ref, num_linha_cap ",
 							"tabelas" 	=> " dcd_import",
-							"values" 	=> " '".$pieces[0]."', '".$sistema."', '".$pieces[6]."', 	'".$FUNCOES->dataInterna("01/".substr($pieces[14]+100,1,2)."/".substr($FUNCOES->dataInterna(substr($pieces[7], 0, 10)),0,4))."' "
+							"values" 	=> " '".$pieces[0]."', 
+											 '".$sistema."', 
+											 '".$pieces[6]."', 
+											 '".$FUNCOES->dataInterna("01/".substr($pieces[14]+100,1,2)."/".substr($FUNCOES->dataInterna(substr($pieces[7], 0, 10)),0,4))."',
+											 '".$pieces[22]."' "
 						)
 					);
 				/**/
@@ -99,8 +103,8 @@
         			)
 			");
 		/**/ 
-		mysql_query("	insert into dcd_sistemas (codigoTipoSistema, codigoFrente, codigoRecursoSistemas, dataAlocacao, quantidade)
-						select di.sistema, df.codigoFrente, 3, di.mes_ref, di.horas_planejadas FROM dcd_import di, dcd_frentes df where di.id_requisicao = df.idFrente");
+		mysql_query("	insert into dcd_sistemas (codigoTipoSistema, codigoFrente, codigoRecursoSistemas, dataAlocacao, quantidade, num_linha_cap)
+						select di.sistema, df.codigoFrente, 3, di.mes_ref, di.horas_planejadas, di.num_linha_cap FROM dcd_import di, dcd_frentes df where di.id_requisicao = df.idFrente");
 		if (mysql_affected_rows() > 0)
 		{ 
 			$msn="Processamento realizado com sucesso.";

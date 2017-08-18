@@ -12,6 +12,7 @@ $descricao			="";	If (isset($_POST["descricao"])) 		{	$descricao 		= $_POST["des
 $idFrente			="";	If (isset($_POST["idFrente"]))			{	$idFrente 		= $_POST["idFrente"]; 				}
 $nomeFrente			="";	If (isset($_POST["nomeFrente"]))		{	$nomeFrente 		= $_POST["nomeFrente"]; 		}
 $descricaoFrente 	="";	If (isset($_POST["descricaoFrente"]))	{	$descricaoFrente 	= $_POST["descricaoFrente"];	}
+$prioridadeFrente	="";	If (isset($_POST["prioridadeFrente"]))	{	$prioridadeFrente 	= $_POST["prioridadeFrente"];	}
 
 $codigoSistema			="";
 $codigoRecursoSistemas	="";
@@ -314,7 +315,7 @@ foreach($listaMarcoProjeto as $key => $value){
 		";
 	}
 	list($LMPcodigoFase, $LMPdataInicioMarco, $LMPdataFimMarco, $LMPcodigoMarco, $LMPusuarioCadastro, $LMPdataCadastro)  = explode("#",$listaMarcoProjeto[$key][0]);
-	$LMPdataMarcoInicio2="TBD"; $LMPdataMarcoFim2="TBD"; $LMPcodigoMarco2 = "";
+	$LMPdataMarcoInicio2="TBD"; $LMPdataMarcoFim2="TBD"; $LMPcodigoMarco2 = ""; $LMPdataInicioMarco2=""; $LMPdataFimMarco2="";
 	if (isset($listaMarcoProjeto[$key][1])){
 		list($LMPcodigoFase2, $LMPdataInicioMarco2, $LMPdataFimMarco2,$LMPcodigoMarco2, $LMPusuarioCadastro2, $LMPdataCadastro2) = explode("#",$listaMarcoProjeto[$key][1]);
 	}
@@ -448,11 +449,12 @@ $listaSistemas[]="
 				<table class=\"table table-striped table-condensed\">
 				<thead>
 				<tr>
-					<th style=\"width:30%\">Recurso</th>
+					<th style=\"width:15%\">Recurso</th>
 					<th style=\"width:25%\">Sistema</th>
 					<th style=\"width:10%\">Alocação</th>
 					<th style=\"width:15%\">Quantidade Horas</th>
 					<th style=\"width:15%\">Custo</th>
+					<th style=\"width:15%\">CAP</th>
 					<th style=\"width:5%\">&nbsp</th>
 				</tr>
 				</thead>
@@ -460,7 +462,7 @@ $listaSistemas[]="
 
 $FUNCOES->consulta(array
 			(
-			"campos" 	=> " ds.codigoSistema, ds.dataAlocacao, dts.nomeSistema, dtt.nomeTecnologia, dtc.tipoContrato, ds.custo, ds.quantidade, drs.nomeRecurso, ds.dataCadastro, ds.horaCadastro, ds.usuarioCadastro",
+			"campos" 	=> " ds.codigoSistema, ds.dataAlocacao, dts.nomeSistema, dtt.nomeTecnologia, dtc.tipoContrato, ds.custo, ds.quantidade, drs.nomeRecurso, ds.dataCadastro, ds.horaCadastro, ds.usuarioCadastro, ds.num_linha_cap ",
 			"tabelas" 	=> " dcd_sistemas ds, dcd_tipossistema dts, dcd_tipostecnologia dtt, dcd_tiposcontrato dtc, dcd_recursosistemas drs ",
 			"condicoes"	=> " ds.codigoFrente = $codigoFrente and ds.codigoRecursoSistemas = drs.codigoRecursoSistemas and ds.codigoTipoSistema = dts.codigoSistema and dts.codigoTecnologia = dtt.codigoTecnologia and dts.codigoContrato = dtc.codigoTipoContrato ",
 			"ordenacao" => " ds.dataAlocacao, dts.nomeSistema, dtt.nomeTecnologia "
@@ -480,6 +482,7 @@ if ($FUNCOES->GetLinhas()>0)
 					<td>".substr($FUNCOES->dataExterna($obj->dataAlocacao), 3)."</td>
 					<td style=\"text-align: right;\">".$FUNCOES->formataValor($obj->quantidade)."</td>
 					<td style=\"text-align: right;\">R$ ".$FUNCOES->formataValor($obj->custo)."</td>
+					<td>".$obj->num_linha_cap."</td>
 					<td>".($edit?"<img src=\"./images/banlist_16.png\" style=\"text-align: center; cursor:hand; cursor:pointer;\" name=\"img\" alt=\"Excluir Sistema Impactado\" onclick=\"document.aplicacao.codigoSistemaImpactado.value=".$obj->codigoSistema."; executar('m001/r001/f001/excluirSistema','aplicacao')\">":" ")."</td>
 				</tr>";
 		/**/
@@ -519,6 +522,7 @@ if ($edit)
 				<td>$periodosAlocacao</td>
 				<td><input class=\"form-control\" id=\"valor1\" name=\"quantidade\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$quantidade\"></td>
 				<td><input class=\"form-control\" id=\"valor2\" name=\"custo\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$custo\"></td>
+				<td>&nbsp;</td>
 				<td><img src=\"./images/mini-check.gif\" style=\"text-align: center; cursor:hand; cursor:pointer;\" name=\"img\" alt=\"Incluir Sistema Impactado\" onclick=\"executar('m001/r001/f001/cadastrarSistema','aplicacao')\"></td>
 			</tr>";
 }

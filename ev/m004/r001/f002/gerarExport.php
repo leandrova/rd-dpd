@@ -515,6 +515,7 @@ $objPHPExcel->getActiveSheet()->setCellValue('D1', 'Alocação');
 $objPHPExcel->getActiveSheet()->setCellValue('E1', 'Nome Recurso');
 $objPHPExcel->getActiveSheet()->setCellValue('F1', 'Sistema');
 $objPHPExcel->getActiveSheet()->setCellValue('G1', 'Jornadas');
+$objPHPExcel->getActiveSheet()->setCellValue('H1', 'CAP');
 
 $FUNCOES->consulta(array
 			(
@@ -526,7 +527,8 @@ $FUNCOES->consulta(array
 										dr.nomeRecurso, 
 										dt.nomeSistema, 
 										ds.quantidade, 
-										convert(ds.quantidade/8, DECIMAL(10,2)) jornadas
+										convert(ds.quantidade/8, DECIMAL(10,2)) jornadas,
+										ds.num_linha_cap num_linha_cap
 								from 	dcd_sistemas ds, 
 										dcd_frentes df, 
 										dcd_fasesprojetos dp, 
@@ -546,7 +548,8 @@ $FUNCOES->consulta(array
 										dj.nomeRecurso, 
 										dr.usuarioRecurso, 
 										dj.quantidade, 
-										dj.quantidade jornadas
+										dj.quantidade jornadas,
+										'' num_linha_cap
 								from 	dcd_jornadasfixas dj, 
 										dcd_recursos dr, 
 										dcd_origemprojetos do 
@@ -570,6 +573,7 @@ if ($FUNCOES->GetLinhas()>0)
 		$objPHPExcel->getActiveSheet()->setCellValue("E".$linha, $obj->nomeRecurso);
 		$objPHPExcel->getActiveSheet()->setCellValue("F".$linha, $obj->nomeSistema);
 		$objPHPExcel->getActiveSheet()->setCellValue("G".$linha, $obj->jornadas);
+		$objPHPExcel->getActiveSheet()->setCellValue("H".$linha, $obj->num_linha_cap);
 		
 		if ($tpStyle == 0) { 
 			$tpStyle=1;	$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleLinha1, "A".$linha.":G".$linha."");
@@ -584,13 +588,13 @@ if ($FUNCOES->GetLinhas()>0)
 $objPHPExcel->getActiveSheet()->setTitle('Lista de Custos');
 
 /* Aplicando Alinhamento */
-$objPHPExcel->getActiveSheet()->getStyle("A".$linha.":G".$linha)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_TOP);
+$objPHPExcel->getActiveSheet()->getStyle("A".$linha.":H".$linha)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_TOP);
 
 /* Aplicando Quebra de Linha */
-$objPHPExcel->getActiveSheet()->getStyle("A1:G".$linha)->getAlignment()->setWrapText(true);
+$objPHPExcel->getActiveSheet()->getStyle("A1:H".$linha)->getAlignment()->setWrapText(true);
 
 // Set title row bold
-$objPHPExcel->getActiveSheet()->getStyle('A1:G1')->getFont()->setBold(true);
+$objPHPExcel->getActiveSheet()->getStyle('A1:H1')->getFont()->setBold(true);
 
 // Largura e Altura das Linhas
 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
@@ -600,9 +604,10 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
 $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
 $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
 $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
 
 /* Aplicando Style do Titulo */
-$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleTitulo, "A1:G1");
+$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleTitulo, "A1:H1");
 
 // Set autofilter
 $objPHPExcel->getActiveSheet()->setAutoFilter($objPHPExcel->getActiveSheet()->calculateWorksheetDimension());

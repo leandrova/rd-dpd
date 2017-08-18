@@ -4,9 +4,9 @@ $codigoFrente		="";	If (isset($_POST["codigoFrente"]))		{	$codigoFrente 		= $_PO
 $tipoPlanejamento	="";	If (isset($_POST["tipoPlanejamento"]))	{	$tipoPlanejamento 	= $_POST["tipoPlanejamento"]; 	}
 
 $FUNCOES->consulta(array ( 
-					"campos"	=> " fp.nomeFase, fp.codigoFase, mf.dataInicioMarco, mf.codigoFimMarco, mf.usuarioCadastro, mf.dataCadastro", 
+					"campos"	=> " fp.nomeFase, fp.codigoFase, mf.dataInicioMarco, mf.dataFimMarco, mf.codigoMarco, mf.usuarioCadastro, mf.dataCadastro", 
 					"tabelas" 	=> " dcd_fasesprojetos fp left join dcd_marcofrente mf on fp.codigoFase = mf.codigoFase and mf.codigoFrente = $codigoFrente",
-					"condicoes"	=> " dataMarco is not null ",
+					"condicoes"	=> " dataInicioMarco is not null and dataFimMarco is not null ",
 					"ordenacao"	=> " fp.codigoFase, mf.codigoMarco desc "
 					)
 				);
