@@ -244,10 +244,12 @@ if ($FUNCOES->GetLinhas()>0)
 			}
 		}
 		
-		foreach ($listPlanejamento as $key => $value) {
-			if ($planejamento <> "") { $planejamento.="\n"; }
-			if ( ($listPlanejamento[$key]['dataInicioMarco'] <> "") or ($listPlanejamento[$key]['dataFimMarco'] <> "") ){
-				$planejamento .= $listPlanejamento[$key]['nomeFase']." = ".$listPlanejamento[$key]['dataInicioMarco']." ".$listPlanejamento[$key]['dataFimMarco'];
+		if (isset($listPlanejamento)){
+			foreach ($listPlanejamento as $key => $value) {
+				if ($planejamento <> "") { $planejamento.="\n"; }
+				if ( ($listPlanejamento[$key]['dataInicioMarco'] <> "") or ($listPlanejamento[$key]['dataFimMarco'] <> "") ){
+					$planejamento .= $listPlanejamento[$key]['nomeFase']." = ".$listPlanejamento[$key]['dataInicioMarco']." ".$listPlanejamento[$key]['dataFimMarco'];
+				}
 			}
 		}
 
@@ -312,10 +314,216 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setAutoSize(true);
 $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setAutoSize(true);
 $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setAutoSize(true);
 
-// Aba de Projetos
+// Aba de Projetoszz
 
 $objPHPExcel->createSheet();
 $objPHPExcel->setActiveSheetIndex(1);
+
+$FUNCOES->consulta(array
+			(
+			"campos" 	=> " 	p1.codigoProjeto, 
+								p1.nomeProjeto, 
+								f1.codigoFrente, 
+								p1.descricao, 
+								s1.descricaoStatus, 
+								f1.prioridadeFrente, 
+								f1.idFrente, 
+								f1.nomeFrente, 
+								f1.descricaoFrente, 
+								o1.nomeOrigem, 
+								r1.usuarioRecurso, 
+								f2.nomeFase, 
+								(select  dataInicioMarco from dcd_marcofrente mf where mf.codigoFase = f2.codigoFase and mf.codigoFrente = f1.codigoFrente order by codigoMarco desc limit 1) dataIniFase, 
+								(select  dataFimMarco from dcd_marcofrente mf where mf.codigoFase = f2.codigoFase and mf.codigoFrente = f1.codigoFrente order by codigoMarco desc limit 1) dataFimFase, 
+								descricaoTipo, 
+								(select  dataInicioMarco from dcd_marcofrente mf where mf.codigoFase = 8 and mf.codigoFrente = f1.codigoFrente order by codigoMarco desc limit 1) dataFimProjeto, 
+								as1.nomeArea,
+								(select  sum(quantidade) from dcd_sistemas ds where ds.codigoFrente = f1.codigoFrente) quantidadeJornadas,
+        						(select  sum(custo) from dcd_sistemas ds where ds.codigoFrente = f1.codigoFrente) custoJornadas,
+        						f1.tipoPlanejamento ",
+			"tabelas" 	=> " 	dcd_projetos p1, 
+								dcd_frentes f1, 
+								dcd_origemprojetos o1, 
+								dcd_tiposprojeto t1, 
+								dcd_fasesprojetos f2, 
+								dcd_recursos r1, 
+								dcd_memoriaprojetos m1, 
+								dcd_statusprojeto s1, 
+								dcd_areasolicitante as1  ",
+			"condicoes"	=> " 	f1.codigoStatus = s1.codigoStatus and 
+								p1.codigoProjeto = f1.codigoProjeto and 
+								f1.codigoOrigem = o1.codigoOrigem and 
+								f1.codigoTipoProjeto = t1.codigoTipoProjeto and 
+								f1.codigoFase = f2.codigoFase and 
+								f1.codigoRecurso = r1.codigoRecurso and 
+								m1.codigoOrigem = f1.codigoOrigem and 
+								m1.codigoTipoProjeto = f1.codigoTipoProjeto and 
+								m1.codigoFase = f1.codigoFase and 
+								f1.codigoArea = as1.codigoArea and 
+								p1.nomeProjeto <> 'TESTE' and 
+								f2.codigoFase <> 10 and 
+								f1.codigoStatus = 1 and
+								f1.codigoOrigem = 3 ",
+			"ordenacao" => " 	2,
+								o1.nomeOrigem,
+								as1.nomeArea, 
+								f2.codigoFase desc,
+								16,  
+								f1.prioridadeFrente, 
+								f1.nomeFrente "
+			)
+		);		
+if ($FUNCOES->GetLinhas()>0)
+{
+	$tpStyle=0; $linha=0; $nomeProjeto = "";
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{
+		$linha=$linha+1; $nomeProjetoTT = $obj->nomeProjeto;
+
+		if ($nomeProjeto <> $nomeProjetoTT)
+		{
+			$nomeProjeto = $nomeProjetoTT;
+			$status = "Projetos da vertical ".$nomeProjeto;
+
+			$objPHPExcel->getActiveSheet()->setCellValue("A".$linha, $status);
+			$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleTitulo2, "A".$linha.":M".$linha);
+			$objPHPExcel->getActiveSheet()->getStyle("A".$linha.":M".$linha)->getFont()->setBold(true);
+			$objPHPExcel->getActiveSheet()->mergeCells("A".$linha.":M".$linha);
+			$linha=$linha+1;
+			$objPHPExcel->getActiveSheet()->setCellValue("A".$linha, 'Prioridade');
+			$objPHPExcel->getActiveSheet()->setCellValue("B".$linha, 'Codigo');
+			$objPHPExcel->getActiveSheet()->setCellValue("C".$linha, 'Projeto');
+			$objPHPExcel->getActiveSheet()->setCellValue("D".$linha, 'Origem');
+			$objPHPExcel->getActiveSheet()->setCellValue("E".$linha, 'Frente');
+			$objPHPExcel->getActiveSheet()->setCellValue("F".$linha, 'Release');
+			$objPHPExcel->getActiveSheet()->setCellValue("G".$linha, 'Status');
+			$objPHPExcel->getActiveSheet()->setCellValue("H".$linha, 'Fase');
+			$objPHPExcel->getActiveSheet()->setCellValue("I".$linha, 'Planejamento');
+			$objPHPExcel->getActiveSheet()->setCellValue("J".$linha, 'Historico');
+			$objPHPExcel->getActiveSheet()->setCellValue("K".$linha, 'Analista');
+			$objPHPExcel->getActiveSheet()->setCellValue("L".$linha, 'Jornadas');
+			$objPHPExcel->getActiveSheet()->setCellValue("M".$linha, 'Custo');
+			$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleTitulo, "A".$linha.":M".$linha."");
+			$objPHPExcel->getActiveSheet()->getStyle("A".$linha.":M".$linha)->getFont()->setBold(true);
+			$linha=$linha+1;
+		}
+
+		$objPHPExcel->getActiveSheet()->setCellValue("A".$linha, ($obj->prioridadeFrente > 0) ? $obj->prioridadeFrente : '') ;
+		$objPHPExcel->getActiveSheet()->setCellValue("B".$linha, $obj->idFrente);
+		$objPHPExcel->getActiveSheet()->setCellValue("C".$linha, $obj->nomeFrente);
+		$objPHPExcel->getActiveSheet()->setCellValue("D".$linha, str_replace(chr(10),'', str_replace(chr(13),'',$obj->nomeOrigem) ) );
+
+		$objPHPExcel->getActiveSheet()->setCellValue("E".$linha, $obj->nomeArea);
+
+		if ($obj->dataFimProjeto <> null) { $dataFimProjeto = $FUNCOES->dataExterna($obj->dataFimProjeto); } else { $dataFimProjeto = "TBD"; }
+		$objPHPExcel->getActiveSheet()->setCellValue("F".$linha, $dataFimProjeto);
+
+		if ( ($obj->dataFimProjeto <> null) and ($obj->dataFimProjeto <> '0000-00-00') ) { 
+			$tipoPlanejamento = ($obj->tipoPlanejamento) ? 'Planejado' : 'Previsto'; 
+		} else { 
+			$tipoPlanejamento = ""; 
+		}
+
+		$objPHPExcel->getActiveSheet()->setCellValue("G".$linha, $tipoPlanejamento);
+
+		$objPHPExcel->getActiveSheet()->setCellValue("H".$linha, $obj->nomeFase);
+
+		/* Buscando Planejamento */
+		$res1 = mysql_query("
+				select fp.nomeFase, fp.codigoFase, mf.dataInicioMarco, mf.dataFimMarco, mf.codigoMarco, mf.usuarioCadastro, mf.dataCadastro
+				from dcd_fasesprojetos fp left join dcd_marcofrente mf on fp.codigoFase = mf.codigoFase and mf.codigoFrente = $obj->codigoFrente
+				order by fp.codigoFase, mf.codigoMarco
+			");
+		$linhass=mysql_affected_rows(); $planejamento=""; unset($listPlanejamento);
+		if ($linhass>0)
+		{ 
+			while ($objj=mysql_fetch_object($res1))
+			{ 
+				if ( ($objj->dataInicioMarco <> '0000-00-00') or ($objj->dataFimMarco <> '0000-00-00') )
+				{
+					if ($planejamento <> "") { $planejamento.="\n"; }
+					$listPlanejamento[$objj->codigoFase]['nomeFase'] 		= $objj->nomeFase;
+					$listPlanejamento[$objj->codigoFase]['dataInicioMarco'] = $FUNCOES->dataExterna($objj->dataInicioMarco);
+					$listPlanejamento[$objj->codigoFase]['dataFimMarco'] 	= $FUNCOES->dataExterna($objj->dataFimMarco);
+				}
+			}
+		}
+		
+		if (isset($listPlanejamento)){
+			foreach ($listPlanejamento as $key => $value) {
+				if ($planejamento <> "") { $planejamento.="\n"; }
+				if ( ($listPlanejamento[$key]['dataInicioMarco'] <> "") or ($listPlanejamento[$key]['dataFimMarco'] <> "") ){
+					$planejamento .= $listPlanejamento[$key]['nomeFase']." = ".$listPlanejamento[$key]['dataInicioMarco']." ".$listPlanejamento[$key]['dataFimMarco'];
+				}
+			}
+		}
+
+		$objPHPExcel->getActiveSheet()->setCellValue("I".$linha, ($planejamento));
+
+		/* Buscando Historico */
+		$res1 = mysql_query("
+				select	*
+				from 	dcd_historico
+				where	codigoFrente = $obj->codigoFrente
+				order by dataHistorico desc
+			");
+		$linhass=mysql_affected_rows(); $historico="";
+		if ($linhass>0)
+		{ 
+			while ($objj=mysql_fetch_object($res1))
+			{ 
+				if ($historico <> "") { $historico.="\n"; }
+				$historico.=$FUNCOES->dataExterna($objj->dataHistorico)." - ".(strip_tags(html_entity_decode(($objj->descricaoHistorico))));
+			}
+		}
+		$objPHPExcel->getActiveSheet()->setCellValue("J".$linha, utf8_encode($historico));
+		
+		$objPHPExcel->getActiveSheet()->setCellValue("K".$linha, $obj->usuarioRecurso);
+
+		$objPHPExcel->getActiveSheet()->setCellValue("L".$linha, $FUNCOES->formataValor($obj->quantidadeJornadas/8));
+
+		$objPHPExcel->getActiveSheet()->setCellValue("M".$linha, "R$ ".$FUNCOES->formataValor($obj->custoJornadas));
+
+
+		/* Aplicando Style e Tamanho */
+		if ($tpStyle == 0) { 
+			$tpStyle=1;	$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleLinha1, "A".$linha.":M".$linha."");
+		} else { 
+			$tpStyle=0;	$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleLinha2, "A".$linha.":M".$linha."");
+		}
+		$objPHPExcel->getActiveSheet()->getRowDimension($linha)->setRowHeight(30);
+	}
+}
+
+// Rename worksheet
+$objPHPExcel->getActiveSheet()->setTitle('Status Release - Por Frente');
+
+/* Aplicando Alinhamento */
+$objPHPExcel->getActiveSheet()->getStyle("A1:M".$linha)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_TOP);
+
+/* Aplicando Quebra de Linha */
+$objPHPExcel->getActiveSheet()->getStyle("A1:M".$linha)->getAlignment()->setWrapText(true);
+
+// Largura e Altura das Linhas
+$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(50);
+$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setAutoSize(true);
+$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setAutoSize(true);
+
+
+// Aba de Projetoszz
+
+$objPHPExcel->createSheet();
+$objPHPExcel->setActiveSheetIndex(2);
 $objPHPExcel->getActiveSheet()->setCellValue('A1', 'Nome Projeto');
 $objPHPExcel->getActiveSheet()->setCellValue('B1', 'Descricao');
 $objPHPExcel->getActiveSheet()->setCellValue('C1', 'Codigo');
@@ -372,8 +580,7 @@ $FUNCOES->consulta(array
 							m1.codigoTipoProjeto = f1.codigoTipoProjeto and 
 							m1.codigoFase = f1.codigoFase and 
 							f1.codigoArea = as1.codigoArea and
-							f1.codigoOrigem = 3 and 
-							f1.codigoStatus = 1 ",
+							f1.codigoOrigem = 3 ",
 			"ordenacao" => "p1.nomeProjeto, 
 							f1.nomeFrente, 
 							f1.dataCadastro "
@@ -507,7 +714,7 @@ $objPHPExcel->getActiveSheet()->getProtection()->setFormatCells(true);*/
 // Aba de Esforco
 
 $objPHPExcel->createSheet();
-$objPHPExcel->setActiveSheetIndex(2);
+$objPHPExcel->setActiveSheetIndex(3);
 $objPHPExcel->getActiveSheet()->setCellValue('A1', 'Numero Frente');
 $objPHPExcel->getActiveSheet()->setCellValue('B1', 'Nome Frente');
 $objPHPExcel->getActiveSheet()->setCellValue('C1', 'Origem');
@@ -615,7 +822,7 @@ $objPHPExcel->getActiveSheet()->setAutoFilter($objPHPExcel->getActiveSheet()->ca
 /* #################### Definindo Aba 7 ######################## */
 
 $objPHPExcel->createSheet();
-$objPHPExcel->setActiveSheetIndex(3);
+$objPHPExcel->setActiveSheetIndex(4);
 
 // Rename worksheet
 $objPHPExcel->getActiveSheet()->setTitle('Grafico_Jornadas_Mes_PPs');
@@ -624,6 +831,23 @@ $objWorksheet = $objPHPExcel->getActiveSheet();
 
 unset($arrayGrafico); unset($arrayTT);
 $arrayGrafico[]= array('', 'Total', 'Dev', 'Dev Loja', 'Dev Easy', 'Testes', 'Líder PP', 'Analista Funcional'); $linhas = 1;
+
+/* 
+ 63 MEU VIVO PF - FIXA (1378-11)
+ 64 MEU VIVO PF - MÓVEL (1378-12)
+ 65 MEU VIVO PJ (1379)
+ 68 MV PJ APP
+ 74 NOVA LOJA ONLINE (2458)
+ 87 PORTAL VIVO (1520)
+152 VIVO EASY APP (2700)
+    PORTAL INSTITUCIONAL WCS 
+    FRAMEWORK MOBILE
+    TAV - TERMINAL DE AUTO ATENDIMENTO VIVO
+    MEU VIVO FIXO
+    MEU VIVO FIXO - MOBILE
+    Meu Vivo Fixo - Portlets
+    MEU VIVO FIXO - SERVICE ADAPTER
+*/
 
 $FUNCOES->consulta(array
 			(
@@ -643,7 +867,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds2 
 				            	where 	ds2.codigoRecursoSistemas = 3 and 
 				            			ds2.dataAlocacao = ds.dataAlocacao and 
-				            			ds2.codigoTipoSistema not in (70, 132, 141) and
+				            			ds2.codigoTipoSistema not in (74, 152, 143) and
 				            			ds2.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds2.codigoFrente and
@@ -654,7 +878,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds3 
 				            	where 	ds3.codigoRecursoSistemas = 3 and 
 				            			ds3.dataAlocacao = ds.dataAlocacao and 
-				            			ds3.codigoTipoSistema in (70) and
+				            			ds3.codigoTipoSistema in (74) and
 				            			ds3.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds3.codigoFrente and
@@ -665,7 +889,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds4 
 				            	where 	ds4.codigoRecursoSistemas = 3 and 
 				            			ds4.dataAlocacao = ds.dataAlocacao and 
-				            			ds4.codigoTipoSistema in (141) and
+				            			ds4.codigoTipoSistema in (152) and
 				            			ds4.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds4.codigoFrente and
@@ -677,7 +901,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds5 
 				            	where 	ds5.codigoRecursoSistemas = 3 and 
 				            			ds5.dataAlocacao = ds.dataAlocacao and 
-				            			ds5.codigoTipoSistema in (132) and
+				            			ds5.codigoTipoSistema in (143) and
 				            			ds5.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds5.codigoFrente and
@@ -735,7 +959,7 @@ foreach ($array as $key => $value) {
 	if ($keyy == "") { $keyy = $key; }
 	$dataAlocacao = $key;
 	$arrayGrafico[] = array(
-						substr($FUNCOES->dataExterna($dataAlocacao), -6), 
+						substr($FUNCOES->dataExterna($dataAlocacao), -7), 
 						$value['jornadasTotal'], 
 						$value['jornadasDesenvolvimento'], 
 						$value['jornadasDesenvolvimentoLoja'], 
@@ -819,7 +1043,7 @@ $objWorksheet->addChart($chart);
 /* #################### Definindo Aba 7 ######################## */
 
 $objPHPExcel->createSheet();
-$objPHPExcel->setActiveSheetIndex(4);
+$objPHPExcel->setActiveSheetIndex(5);
 
 // Rename worksheet
 $objPHPExcel->getActiveSheet()->setTitle('Grafico_Fases_Projetos_PPs');
@@ -912,7 +1136,7 @@ $objWorksheet->addChart($chart);
 /* #################### Definindo Aba 7 ######################## */
 
 $objPHPExcel->createSheet();
-$objPHPExcel->setActiveSheetIndex(5);
+$objPHPExcel->setActiveSheetIndex(6);
 
 // Rename worksheet
 $objPHPExcel->getActiveSheet()->setTitle('Grafico_Projetos_Alocacao_PPs');
@@ -929,13 +1153,13 @@ $FUNCOES->consulta(array
 								SELECT 	dr.usuarioRecurso, df.codigoFase, dp.nomeFase, count(1) quantidade
 								FROM 	dcd_frentes df, dcd_recursos dr, dcd_fasesprojetos dp
 								WHERE	df.codigoRecurso = dr.codigoRecurso and df.codigoFase = dp.codigoFase and 
-										df.codigoProjeto <> 1 and df.codigoFase <> 10 and df.codigoStatus = 1
+										df.codigoProjeto <> 1 and df.codigoFase <> 10 and df.codigoStatus = 1 and df.codigoOrigem = 3
 								group by dr.usuarioRecurso, df.codigoFase, dp.nomeFase
 								UNION ALL
 								SELECT 	dr.usuarioRecurso, 99 codigoFase, 'Total' nomeFase, count(1) quantidade
 								FROM 	dcd_frentes df, dcd_recursos dr, dcd_fasesprojetos dp
 								WHERE	df.codigoRecurso = dr.codigoRecurso and df.codigoFase = dp.codigoFase and 
-										df.codigoProjeto <> 1 and df.codigoFase <> 10 and df.codigoStatus = 1
+										df.codigoProjeto <> 1 and df.codigoFase <> 10 and df.codigoStatus = 1 and df.codigoOrigem = 3
 								group by dr.usuarioRecurso
     						 ) tabela
 			",
@@ -1014,7 +1238,7 @@ $objWorksheet->addChart($chart);
 /* #################### Definindo Aba 8 ######################## */
 
 $objPHPExcel->createSheet();
-$objPHPExcel->setActiveSheetIndex(6);
+$objPHPExcel->setActiveSheetIndex(7);
 
 // Rename worksheet
 $objPHPExcel->getActiveSheet()->setTitle('Grafico_Projetos_Segmento_PPs');
@@ -1034,6 +1258,7 @@ $FUNCOES->consulta(array
 										df.codigoFase = dfp.codigoFase and
 										df.codigoProjeto <> 1 and 
 										df.codigoFase <> 10 and 
+										df.codigoOrigem = 3 and
 										df.codigoStatus = 1
 								GROUP BY 1, 2, 3
 								UNION ALL
@@ -1043,6 +1268,7 @@ $FUNCOES->consulta(array
 										df.codigoFase = dfp.codigoFase and
 										df.codigoProjeto <> 1 and 
 										df.codigoFase <> 10 and 
+										df.codigoOrigem = 3 and
 										df.codigoStatus = 1
 								GROUP BY 1, 2, 3
     						 ) tabela
@@ -1121,8 +1347,25 @@ $objWorksheet->addChart($chart);
 
 /* #################### Definindo Aba 7 ######################## */
 
+/* 
+ 63 MEU VIVO PF - FIXA (1378-11)
+ 64 MEU VIVO PF - MÓVEL (1378-12)
+ 65 MEU VIVO PJ (1379)
+ 68 MV PJ APP
+ 74 NOVA LOJA ONLINE (2458)
+ 87 PORTAL VIVO (1520)
+152 VIVO EASY APP (2700)
+    PORTAL INSTITUCIONAL WCS 
+    FRAMEWORK MOBILE
+    TAV - TERMINAL DE AUTO ATENDIMENTO VIVO
+    MEU VIVO FIXO
+    MEU VIVO FIXO - MOBILE
+    Meu Vivo Fixo - Portlets
+    MEU VIVO FIXO - SERVICE ADAPTER
+*/
+
 $objPHPExcel->createSheet();
-$objPHPExcel->setActiveSheetIndex(7);
+$objPHPExcel->setActiveSheetIndex(8);
 
 // Rename worksheet
 $objPHPExcel->getActiveSheet()->setTitle('Grafico_Jornadas_Mes_Dev_PPs');
@@ -1150,7 +1393,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds2 
 				            	where 	ds2.codigoRecursoSistemas = 3 and 
 				            			ds2.dataAlocacao = ds.dataAlocacao and 
-				            			ds2.codigoTipoSistema in (59) and
+				            			ds2.codigoTipoSistema in (63) and
 				            			ds2.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds2.codigoFrente and
@@ -1161,7 +1404,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds2 
 				            	where 	ds2.codigoRecursoSistemas = 3 and 
 				            			ds2.dataAlocacao = ds.dataAlocacao and 
-				            			ds2.codigoTipoSistema in (60) and
+				            			ds2.codigoTipoSistema in (64) and
 				            			ds2.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds2.codigoFrente and
@@ -1172,7 +1415,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds2 
 				            	where 	ds2.codigoRecursoSistemas = 3 and 
 				            			ds2.dataAlocacao = ds.dataAlocacao and 
-				            			ds2.codigoTipoSistema in (61) and
+				            			ds2.codigoTipoSistema in (65) and
 				            			ds2.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds2.codigoFrente and
@@ -1183,7 +1426,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds2 
 				            	where 	ds2.codigoRecursoSistemas = 3 and 
 				            			ds2.dataAlocacao = ds.dataAlocacao and 
-				            			ds2.codigoTipoSistema in (80) and
+				            			ds2.codigoTipoSistema in (87) and
 				            			ds2.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds2.codigoFrente and
@@ -1194,7 +1437,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds3 
 				            	where 	ds3.codigoRecursoSistemas = 3 and 
 				            			ds3.dataAlocacao = ds.dataAlocacao and 
-				            			ds3.codigoTipoSistema in (70) and
+				            			ds3.codigoTipoSistema in (74) and
 				            			ds3.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds3.codigoFrente and
@@ -1205,7 +1448,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds4 
 				            	where 	ds4.codigoRecursoSistemas = 3 and 
 				            			ds4.dataAlocacao = ds.dataAlocacao and 
-				            			ds4.codigoTipoSistema in (141) and
+				            			ds4.codigoTipoSistema in (152) and
 				            			ds4.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds4.codigoFrente and
@@ -1217,7 +1460,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds5 
 				            	where 	ds5.codigoRecursoSistemas = 3 and 
 				            			ds5.dataAlocacao = ds.dataAlocacao and 
-				            			ds5.codigoTipoSistema not in (59, 60, 61, 70, 80, 132, 141) and
+				            			ds5.codigoTipoSistema not in (152, 74, 87, 65, 64, 63) and
 				            			ds5.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds5.codigoFrente and
@@ -1229,7 +1472,7 @@ $FUNCOES->consulta(array
 				            	from 	dcd_sistemas ds5 
 				            	where 	ds5.codigoRecursoSistemas = 3 and 
 				            			ds5.dataAlocacao = ds.dataAlocacao and 
-				            			ds5.codigoTipoSistema in (132) and
+				            			ds5.codigoTipoSistema in (143) and
 				            			ds5.codigoFrente in (	select 	df.codigoFrente 
 				            									from 	dcd_frentes df
 				            									where 	df.codigoFrente = ds5.codigoFrente and
@@ -1277,7 +1520,7 @@ if ($FUNCOES->GetLinhas()>0)
 	}
 }
 
-$keyy = "";
+$keyy = ""; $linhas = 0;
 foreach ($array as $key => $value) {
 	if ($keyy == "") { $keyy = $key; }
 	$dataAlocacao = $key;
@@ -1326,6 +1569,103 @@ $legend = new PHPExcel_Chart_Legend(PHPExcel_Chart_Legend::POSITION_RIGHT, NULL,
 
 $title = new PHPExcel_Chart_Title('Jornadas Desenvolvimento');
 $yAxisLabel = new PHPExcel_Chart_Title('Jornadas');
+
+//	Create the chart
+$chart = new PHPExcel_Chart(
+	'chart1',		// name
+	$title,			// title
+	$legend,		// legend
+	$plotarea,		// plotArea
+	true,			// plotVisibleOnly
+	0,				// displayBlanksAs
+	NULL,			// xAxisLabel
+	$yAxisLabel		// yAxisLabel
+);
+
+//	Set the position where the chart should appear in the worksheet
+$chart->setTopLeftPosition('A1');
+$chart->setBottomRightPosition('O25');
+
+// style
+$objPHPExcel->getActiveSheet()->setSharedStyle($sharedStyleBranco, "A1:AI50");
+
+//	Add the chart to the worksheet
+$objWorksheet->addChart($chart);
+
+/* #################### Fim Definindo Aba 7 ######################## */
+
+/* #################### Definindo Aba 7 ######################## */
+
+$objPHPExcel->createSheet();
+$objPHPExcel->setActiveSheetIndex(9);
+
+// Rename worksheet
+$objPHPExcel->getActiveSheet()->setTitle('Grafico_Entregas_Mes_PPs');
+
+$objWorksheet = $objPHPExcel->getActiveSheet();
+
+unset($arrayGrafico);
+$arrayGrafico[]= array('Mes', 'Quantidade'); $linhas = 1;
+
+$FUNCOES->consulta(array
+			(
+			"campos" 	=> " a.dataFimProjeto, count(1) quantidade ",
+			"tabelas" 	=> "
+							(
+								select 		(select case when dataInicioMarco = null then 'TBD' when dataInicioMarco = '0000-00-00' then null else DATE_FORMAT(dataInicioMarco, '%Y-%m') end dataInicioMarco from dcd_marcofrente mf where mf.codigoFase = 8 and mf.codigoFrente = f1.codigoFrente order by codigoMarco desc limit 1) dataFimProjeto
+								from 		dcd_frentes f1
+								where 		f1.codigoOrigem = 3 and f1.codigoStatus = 1
+    						) a
+    						group by a.dataFimProjeto
+						   ",
+			"ordenacao" => " 1 "
+			)
+		);	
+
+if ($FUNCOES->GetLinhas()>0)
+{
+	while ($obj=mysql_fetch_object($FUNCOES->GetResultado()))
+	{
+		if ($obj->dataFimProjeto <> '') { $dataFimProjeto = $obj->dataFimProjeto; } else { $dataFimProjeto = 'A definir'; }
+		$arrayGrafico[] = array( $dataFimProjeto, $obj->quantidade ); $linhas++;
+	}
+}
+
+$objWorksheet->fromArray($arrayGrafico);
+
+unset($dataseriesLabels, $xAxisTickValues, $dataSeriesValues);
+
+$dataseriesLabels = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Entregas_Mes_PPs!$A$1', NULL, 1),
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Entregas_Mes_PPs!$B$1', NULL, 1),
+);
+
+$xAxisTickValues = array(
+	new PHPExcel_Chart_DataSeriesValues('String', 'Grafico_Entregas_Mes_PPs!$A$2:$A$'.$linhas.'', NULL, 4),	//	Q1 to Q4
+);
+
+$dataSeriesValues = array(
+	new PHPExcel_Chart_DataSeriesValues('Number', 'Grafico_Entregas_Mes_PPs!$B$2:$B$'.$linhas.'', NULL, 4),
+);
+
+$series = new PHPExcel_Chart_DataSeries(
+	PHPExcel_Chart_DataSeries::TYPE_BARCHART,		// plotType
+	PHPExcel_Chart_DataSeries::GROUPING_STANDARD,	// plotGrouping
+	range(0, count($dataSeriesValues)-1),			// plotOrder
+	$dataseriesLabels,								// plotLabel
+	$xAxisTickValues,								// plotCategory
+	$dataSeriesValues								// plotValues
+);
+
+$series->setPlotDirection(PHPExcel_Chart_DataSeries::DIRECTION_COL);
+
+//	Set the series in the plot area
+$plotarea = new PHPExcel_Chart_PlotArea(NULL, array($series));
+//	Set the chart legend
+$legend = new PHPExcel_Chart_Legend(PHPExcel_Chart_Legend::POSITION_RIGHT, NULL, false);
+
+$title = new PHPExcel_Chart_Title('Entregas Mês');
+$yAxisLabel = new PHPExcel_Chart_Title('Quantidade');
 
 //	Create the chart
 $chart = new PHPExcel_Chart(

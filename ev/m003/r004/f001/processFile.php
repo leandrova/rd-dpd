@@ -47,8 +47,11 @@
 			$linha 	= utf8_encode(fgets($ponteiro, 4096));
 			$pieces = explode(";", $linha);
 
-			$sistema = $tiposSistema[$pieces[5]]."<br>";
-			if ($sistema == ""){ $sistema = 0; }
+			if (isset($tiposSistema[$pieces[5]])){
+				$sistema = $tiposSistema[$pieces[5]];	
+			} else {
+				$sistema = 0;
+			}
 
 			if ( ($i > 0) && ($linha <> "") ) {
 				/**/

@@ -19,6 +19,7 @@ $codigoRecursoSistemas	="";
 $dataAlocacao			="";
 $quantidade				="";
 $custo 					="";
+$num_linha_cap			="";
 
 if (!isset($cadastroSistema))
 {
@@ -27,6 +28,7 @@ if (isset($_POST["codigoRecursoSistemas"]))	{	$codigoRecursoSistemas 	= $_POST["
 if (isset($_POST["dataAlocacao"]))			{	$dataAlocacao 			= $_POST["dataAlocacao"];			}
 if (isset($_POST["quantidade"]))			{	$quantidade 			= $_POST["quantidade"];				}
 if (isset($_POST["custo"]))					{	$custo 					= $_POST["custo"];					}
+if (isset($_POST["num_linha_cap"]))			{	$num_linha_cap 			= $_POST["num_linha_cap"];			}
 }
 
 $dataHistorico		= $FUNCOES->DataExterna($FUNCOES->DATA);	If (isset($_POST["dataHistorico"]))		{	$dataHistorico 		= $_POST["dataHistorico"];		}
@@ -479,11 +481,14 @@ if ($FUNCOES->GetLinhas()>0)
 				<tr  title=\"Cadastrado em ".$FUNCOES->dataExterna($obj->dataCadastro)." as $obj->horaCadastro por $obj->usuarioCadastro \">
 					<td>$obj->nomeRecurso</td>
 					<td>$obj->nomeSistema</td>
-					<td>".substr($FUNCOES->dataExterna($obj->dataAlocacao), 3)."</td>
-					<td style=\"text-align: right;\">".$FUNCOES->formataValor($obj->quantidade)."</td>
-					<td style=\"text-align: right;\">R$ ".$FUNCOES->formataValor($obj->custo)."</td>
-					<td>".$obj->num_linha_cap."</td>
-					<td>".($edit?"<img src=\"./images/banlist_16.png\" style=\"text-align: center; cursor:hand; cursor:pointer;\" name=\"img\" alt=\"Excluir Sistema Impactado\" onclick=\"document.aplicacao.codigoSistemaImpactado.value=".$obj->codigoSistema."; executar('m001/r001/f001/excluirSistema','aplicacao')\">":" ")."</td>
+					<td>".substr($FUNCOES->dataExterna($obj->dataAlocacao), 3)."</td>				
+					<td>".($edit?"<input type=\"text\" name=\"quantidade".$obj->codigoSistema."\" value=\"R$ ".$FUNCOES->formataValor($obj->quantidade)."\" >":"R$ ".$FUNCOES->formataValor($obj->quantidade))."</td>
+					<td>".($edit?"<input type=\"text\" name=\"custo".$obj->codigoSistema."\" value=\"R$ ".$FUNCOES->formataValor($obj->custo)."\" >":"R$ ".$FUNCOES->formataValor($obj->custo))."</td>
+					<td>".($edit?"<input type=\"text\" name=\"num_linha_cap".$obj->codigoSistema."\" value=\"$obj->num_linha_cap\" >":$obj->num_linha_cap)."</td>
+					<td>".($edit?
+							"<img src=\"./images/banlist_16.png\" style=\"text-align: center; cursor:hand; cursor:pointer;\" name=\"img\" alt=\"Excluir Sistema Impactado\" onclick=\"if (confirm('Deseja realmente excluir essa alocação?')) { document.aplicacao.codigoSistemaImpactado.value=".$obj->codigoSistema."; executar('m001/r001/f001/excluirSistema','aplicacao') }\">&nbsp;&nbsp;&nbsp;
+							<img src=\"./images/update.png\" style=\"text-align: center; cursor:hand; cursor:pointer;\" name=\"img\" alt=\"Atualizar Sistema Impactado\" onclick=\"if (confirm('Deseja realmente atualizar essa alocação?')) { document.aplicacao.codigoSistemaImpactado.value=".$obj->codigoSistema."; executar('m001/r001/f001/atualizarSistema','aplicacao') }\">"
+							:" ")."</td>
 				</tr>";
 		/**/
 	}
@@ -522,7 +527,7 @@ if ($edit)
 				<td>$periodosAlocacao</td>
 				<td><input class=\"form-control\" id=\"valor1\" name=\"quantidade\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$quantidade\"></td>
 				<td><input class=\"form-control\" id=\"valor2\" name=\"custo\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$custo\"></td>
-				<td>&nbsp;</td>
+				<td><input class=\"form-control\" name=\"num_linha_cap\" size=\"11\" maxlength=\"20\" type=\"text\" value=\"$num_linha_cap\"></td>
 				<td><img src=\"./images/mini-check.gif\" style=\"text-align: center; cursor:hand; cursor:pointer;\" name=\"img\" alt=\"Incluir Sistema Impactado\" onclick=\"executar('m001/r001/f001/cadastrarSistema','aplicacao')\"></td>
 			</tr>";
 }

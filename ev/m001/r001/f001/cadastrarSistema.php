@@ -1,29 +1,46 @@
 <?
 	$IU="m001/r001/f001/i003";
 	//
-	$codigoProjeto			= "";	If (isset($_POST["codigoProjeto"])) 		{	$codigoProjeto			= $_POST["codigoProjeto"]; 			}
 	$codigoFrente			= "";	If (isset($_POST["codigoFrente"]))			{	$codigoFrente 			= $_POST["codigoFrente"]; 			}
-		
+	//
 	$codigoSistema			= "";	If (isset($_POST["codigoSistema"]))			{	$codigoSistema 			= $_POST["codigoSistema"]; 			}
 	$codigoRecursoSistemas	= "";	If (isset($_POST["codigoRecursoSistemas"]))	{	$codigoRecursoSistemas 	= $_POST["codigoRecursoSistemas"]; 	}
 	$dataAlocacao			= "";	If (isset($_POST["dataAlocacao"]))			{	$dataAlocacao 			= $_POST["dataAlocacao"]; 			}
 	$quantidade				= "";	If (isset($_POST["quantidade"]))			{	$quantidade				= $_POST["quantidade"]; 			}
 	$custo					= "";	If (isset($_POST["custo"]))					{	$custo 					= $_POST["custo"]; 					}
+	$num_linha_cap			= "";	If (isset($_POST["num_linha_cap"]))			{	$num_linha_cap			= $_POST["num_linha_cap"];			}
 	//
-	if ( ($codigoFrente == "")||($codigoSistema == "")||($codigoRecursoSistemas == "")||($dataAlocacao == "") )
+	if ( ($codigoFrente == "") || ($codigoSistema == "") || ($codigoRecursoSistemas == "") || ($dataAlocacao == "") || ($quantidade == "") || ($custo == "") )
 	{
-		$msn="Informe todos os dados para incluir o novo sistema impactado.";
-	}else
-	{
+		$msn="Informe todos os dados para incluir a alocação.<br>[$codigoFrente|$codigoSistema|$codigoRecursoSistemas|$dataAlocacao|$quantidade|$custo].";
+	}
+	else{
 		//
-		$FUNCOES->cadastro(	array(	"campos" 	=> 	"codigoTipoSistema, codigoFrente, codigoRecursoSistemas, dataAlocacao, quantidade, custo, dataCadastro, horaCadastro, usuarioCadastro ",
-									"tabelas" 	=> 	"dcd_sistemas ",
-									"values" 	=> 	" $codigoSistema, $codigoFrente, $codigoRecursoSistemas, '$dataAlocacao', '".$FUNCOES->limpaValor($quantidade)."', 
-													'".$FUNCOES->limpaValor($custo)."', '".$FUNCOES->DATA."', '".$FUNCOES->HORA."', '".$USUARIO."' "
+		$FUNCOES->cadastro(	array(	"campos" 	=> 	" codigoTipoSistema, 
+													  codigoFrente, 
+													  codigoRecursoSistemas, 
+													  dataAlocacao, 
+													  quantidade, 
+													  custo, 
+													  num_linha_cap, 
+													  dataCadastro, 
+													  horaCadastro, 
+													  usuarioCadastro ",
+									"tabelas" 	=> 	" dcd_sistemas ",
+									"values" 	=> 	" $codigoSistema, 
+													  $codigoFrente, 
+													  $codigoRecursoSistemas, 
+													  '$dataAlocacao', 
+													  '".$FUNCOES->limpaValor($quantidade)."', 
+													  '".$FUNCOES->limpaValor($custo)."', 
+													  '$num_linha_cap', 
+													  '".$FUNCOES->DATA."', 
+													  '".$FUNCOES->HORA."', 
+													  '".$USUARIO."' "
 								)
 							);
-		if($FUNCOES->GetLinhas()>0){
-			$msn="Novo Sistema Impactado cadastrado com sucesso.";
+		if($FUNCOES->GetLinhas()){
+			$msn="Novo alocação cadastrado com sucesso.";
 			$FUNCOES->navegacao("eventos","Cadastro","Sistema Impactado","");
 			$cadastroSistema = 1;
 		}
